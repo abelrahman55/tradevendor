@@ -1,0 +1,83 @@
+html,
+body {
+  min-height: 100%;
+}
+
+#__next {
+  height: 100%;
+}
+
+code {
+  font-family: 'Public Sans', sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
+    'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue';
+  padding: 0.1rem 0.4rem;
+  font-size: 90%;
+  color: #d400ff;
+  border-radius: 0.1335rem;
+}
+
+code:not([class*='language-']):before,
+code:not([class*='language-']):after {
+  content: '`';
+}
+
+code[class*='language-'] {
+  padding: 0;
+}
+
+input[type="file"] {
+  border: .1px solid #cdcdcd !important;
+  border-radius: 4px !important;
+  /* padding: 8px !important; */
+  background-color: transparent !important;
+  font-size: 16px !important;
+  transition: border-color 0.3s ease !important;
+  cursor: pointer !important;
+  width: 100%;
+  padding: 4px;
+}
+
+.image-popup-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.image-popup-container img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.image-popup-title {
+  margin-bottom: 15px;
+  font-size: 1.5em;
+  text-align: center;
+}
+
+.select__control {
+  color: black !important;
+  background-color: transparent !important;
+  z-index: 99999 !important;
+}
+
+.select__control * {
+  color: black !important;
+}
+
+.select__control .select__menu {
+  display: block !important;
+}
+
+.select__control .select__menu * {
+  color: black !important;
+}
+
+.css-1p6gmy3-MuiDataGrid-root .MuiDataGrid-row {
+  margin-bottom: 15px !important;
+}
+
+.css-axafay-MuiDataGrid-virtualScroller {
+  overflow-y: auto !important;
+}
