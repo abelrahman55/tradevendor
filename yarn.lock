@@ -3013,11 +3013,6 @@ language-tags@=1.0.5:
   dependencies:
     language-subtag-registry "~0.3.2"
 
-leaflet@^1.9.4:
-  version "1.9.4"
-  resolved "https://registry.npmjs.org/leaflet/-/leaflet-1.9.4.tgz"
-  integrity sha512-nxS1ynzJOmOlHp+iL3FyWqK89GtNL8U8rvlMOsQdTTssxZwCXh8N2NB3GDQOL+YR3XnWyZAxwQixURb+FA74PA==
-
 levn@^0.4.1:
   version "0.4.1"
   resolved "https://registry.npmjs.org/levn/-/levn-0.4.1.tgz"
@@ -4448,7 +4443,6 @@ tr46@~0.0.3:
     i18next-http-backend "2.2.0"
     jsonwebtoken "8.5.1"
     keen-slider "6.8.5"
-    leaflet "^1.9.4"
     moment "^2.30.1"
     mui-file-input "^6.0.0"
     next "13.3.2"
@@ -4468,6 +4462,7 @@ tr46@~0.0.3:
     react-hot-toast "2.4.1"
     react-i18next "12.2.2"
     react-icons "^5.3.0"
+    react-leaflet "^4.2.1"
     react-perfect-scrollbar "1.5.8"
     react-popper "2.3.0"
     react-redux "8.0.5"
