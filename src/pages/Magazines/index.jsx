@@ -44,18 +44,18 @@ import CustomAvatar from 'src/@core/components/mui/avatar'
 import Link from 'next/link'
 import { CiCirclePlus } from 'react-icons/ci'
 
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet'
-import 'leaflet/dist/leaflet.css'
-import L from 'leaflet'
+// import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet'
+// import 'leaflet/dist/leaflet.css'
+// import L from 'leaflet'
 import moment from 'moment'
 import { MuiFileInput } from 'mui-file-input'
 
-delete L.Icon.Default.prototype._getIconUrl
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png'
-})
+// delete L.Icon.Default.prototype._getIconUrl
+// L.Icon.Default.mergeOptions({
+//   iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
+//   iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+//   shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png'
+// })
 
 const BranchesPage = () => {
   const { t } = useTranslation()
@@ -161,34 +161,34 @@ const BranchesPage = () => {
   const [position, setPosition] = useState(null)
   const [prodLoading, setProdLoading] = useState(false)
 
-  const LocationMarker = () => {
-    useMapEvents({
-      click(e) {
-        console.log(e.latlng)
-        setNewBranch({ ...newBranch, lat: e.latlng.lat, lng: e.latlng.lng })
-        setPosition(e.latlng)
-      }
-    })
+  // const LocationMarker = () => {
+  //   useMapEvents({
+  //     click(e) {
+  //       console.log(e.latlng)
+  //       setNewBranch({ ...newBranch, lat: e.latlng.lat, lng: e.latlng.lng })
+  //       setPosition(e.latlng)
+  //     }
+  //   })
 
-    return position === null ? null : <Marker position={position}></Marker>
-  }
+  //   return position === null ? null : <Marker position={position}></Marker>
+  // }
 
-  const LocationMarker2 = () => {
-    useMapEvents({
-      click(e) {
-        console.log(e.latlng)
-        setRowData({ ...rowData, latitude: e.latlng.lat, longitude: e.latlng.lng })
-        setPosition(e.latlng)
-      }
-    })
+  // const LocationMarker2 = () => {
+  //   useMapEvents({
+  //     click(e) {
+  //       console.log(e.latlng)
+  //       setRowData({ ...rowData, latitude: e.latlng.lat, longitude: e.latlng.lng })
+  //       setPosition(e.latlng)
+  //     }
+  //   })
 
-    let obj = {
-      lat: rowData?.latitude,
-      lng: rowData?.longitude
-    }
+  //   let obj = {
+  //     lat: rowData?.latitude,
+  //     lng: rowData?.longitude
+  //   }
 
-    return obj === null ? null : <Marker position={obj}></Marker>
-  }
+  //   return obj === null ? null : <Marker position={obj}></Marker>
+  // }
 
   const getOfferProducts = async id => {
     setProdLoading(true)
@@ -1715,7 +1715,7 @@ const BranchesPage = () => {
               )}
             </div>
           </Box>
-          <Box sx={{ my: 4 }}>
+          {/* <Box sx={{ my: 4 }}>
             <div style={{ width: '90%', margin: 'auto' }}>
               <label htmlFor=''>{t('location')}</label>
               <MapContainer
@@ -1728,7 +1728,6 @@ const BranchesPage = () => {
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 />
                 <LocationMarker2 />
-                {/* {console.log(rowData)} */}
               </MapContainer>
               {rowData && (
                 <div style={{ marginTop: '20px' }}>
@@ -1737,7 +1736,7 @@ const BranchesPage = () => {
                 </div>
               )}
             </div>
-          </Box>
+          </Box> */}
         </DialogContent>
         <DialogActions
           sx={{
