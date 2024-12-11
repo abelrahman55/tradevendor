@@ -43,7 +43,7 @@ import CustomAvatar from 'src/@core/components/mui/avatar'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 
-const branSubs = () => {
+const BranSubs = () => {
   const { query } = useRouter()
   console.log(query?.id)
   const { t } = useTranslation()
@@ -590,21 +590,13 @@ const branSubs = () => {
                 <MenuItem disabled value=''>
                   <em>Placeholder</em>
                 </MenuItem>
-                <MenuItem
-                  key={0}
-                  value={'all'}
-                  // style={getStyles(name, personName, theme)}
-                >
+                <MenuItem key={0} value={'all'}>
                   all
                 </MenuItem>
                 {notAssign &&
                   Array.isArray(notAssign) &&
                   notAssign.map((item, index) => (
-                    <MenuItem
-                      key={index}
-                      value={item.id}
-                      // style={getStyles(name, personName, theme)}
-                    >
+                    <MenuItem key={index} value={item.id}>
                       {item.title_ar}
                     </MenuItem>
                   ))}
@@ -889,4 +881,4 @@ const branSubs = () => {
   )
 }
 
-export default branSubs
+export default BranSubs

@@ -380,25 +380,7 @@ const BranchesPage = () => {
         )
       }
     },
-    // {
-    //   flex: 0.1,
-    //   field: 'Name',
-    //   minWidth: 220,
-    //   headerName: `${t('prods')}`,
-    //   renderCell: ({ row }) => {
-    //     const { id } = row
 
-    //     return (
-    //       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-    //         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-    //           <Link href={`/subcategories/${id}`}>
-    //             <Button variant='contained'>{`${t('prods')}`}</Button>
-    //           </Link>
-    //         </Box>
-    //       </Box>
-    //     )
-    //   }
-    // },
     {
       flex: 0.1,
       field: 'Edit',
@@ -453,7 +435,7 @@ const BranchesPage = () => {
         return (
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-              <Link href={`/branSubs/${id}`}>
+              <Link href={`/BranSubs/${id}`}>
                 <Button variant='contained'>{`${t('subs')}`}</Button>
               </Link>
             </Box>

@@ -56,30 +56,6 @@ const navigation = () => {
       icon: 'tabler:file-dollar',
       path: '/Orders'
     }
-    // {
-    //   title: 'Traders',
-    //   icon: 'tabler:user',
-    //   children: [
-    //     {
-    //       title: 'List',
-    //       path: '/apps/user/list'
-    //     }
-    //   ]
-    // },
-    // {
-    //   title: 'Roles & Permissions',
-    //   icon: 'tabler:settings',
-    //   children: [
-    //     {
-    //       title: 'Roles',
-    //       path: '/apps/roles'
-    //     },
-    //     {
-    //       title: 'Permissions',
-    //       path: '/apps/permissions'
-    //     }
-    //   ]
-    // }
   ]
 }
 

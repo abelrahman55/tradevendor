@@ -72,9 +72,7 @@ const AuthProvider = ({ children }) => {
         const response = await axios.post(authConfig.loginEndpoint, params)
         if (params.rememberMe) {
           window.localStorage.setItem(authConfig.storageTokenKeyName, response.data.accessToken)
-          // window.localStorage.setItem('tradeVenddor', JSON.stringify(response.data.tradeVenddor))
         }
-        // setUser({ ...response.data.tradeVenddor })
         const returnUrl = router.query.returnUrl || '/'
         router.replace(returnUrl !== '/' ? returnUrl : '/')
       } catch (err) {

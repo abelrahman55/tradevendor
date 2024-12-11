@@ -705,7 +705,11 @@ const Admins = () => {
               >
                 {branches &&
                   branches?.map(it => {
-                    return <option value={it.id}>{it.name_ar}</option>
+                    return (
+                      <option key={it.id} value={it.id}>
+                        {it.name_ar}
+                      </option>
+                    )
                   })}
               </Select>
             </FormControl>

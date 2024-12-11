@@ -774,7 +774,6 @@ const Subcategories = () => {
                   onChange={e => {
                     console.log(e.target.value)
                     setNewSubcategory(e.target.value)
-                    // setNewUser({ ...newUser, user_type: e.target.value })
                   }}
                 >
                   {subcategories &&

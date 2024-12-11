@@ -1,5 +1,5 @@
 // ** React Imports
-import { createContext, useState, useEffect, useCallback } from 'react'
+import { createContext, useState, useEffect } from 'react'
 import _ from 'lodash' // Import lodash for debounce functionality
 
 // ** ThemeConfig Import

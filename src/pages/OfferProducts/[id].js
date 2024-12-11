@@ -735,18 +735,8 @@ const OfferProducts = () => {
               <Select
                 multiple
                 displayEmpty
-                // value={personName}
                 value={selectedProducts}
-                // onChange={handleChange}
                 input={<OutlinedInput />}
-                // renderValue={selected => {
-                //   if (selected.length === 0) {
-                //     return <em>Placeholder</em>
-                //   }
-
-                //   return selected.join(', ')
-                // }}
-                // MenuProps={MenuProps}
                 onChange={e => {
                   console.log(e.target.value)
                   setSelectedProducts([...e.target.value])
@@ -759,11 +749,7 @@ const OfferProducts = () => {
                 {products &&
                   Array.isArray(products) &&
                   products.map((item, index) => (
-                    <MenuItem
-                      key={index}
-                      value={item.id}
-                      // style={getStyles(name, personName, theme)}
-                    >
+                    <MenuItem key={index} value={item.id}>
                       {item.name_ar}
                     </MenuItem>
                   ))}

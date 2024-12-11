@@ -782,18 +782,8 @@ const Products = () => {
               <Select
                 multiple
                 displayEmpty
-                // value={personName}
                 value={selectedBranches}
-                // onChange={handleChange}
                 input={<OutlinedInput />}
-                // renderValue={selected => {
-                //   if (selected.length === 0) {
-                //     return <em>Placeholder</em>
-                //   }
-
-                //   return selected.join(', ')
-                // }}
-                // MenuProps={MenuProps}
                 onChange={e => {
                   console.log(e.target.value)
                   setSelectedBranches([...e.target.value])
@@ -803,21 +793,13 @@ const Products = () => {
                 <MenuItem disabled value=''>
                   <em>Placeholder</em>
                 </MenuItem>
-                <MenuItem
-                  key={0}
-                  value={'all'}
-                  // style={getStyles(name, personName, theme)}
-                >
+                <MenuItem key={0} value={'all'}>
                   all
                 </MenuItem>
                 {branches &&
                   Array.isArray(branches) &&
                   branches.map((item, index) => (
-                    <MenuItem
-                      key={index}
-                      value={item.id}
-                      // style={getStyles(name, personName, theme)}
-                    >
+                    <MenuItem key={index} value={item.id}>
                       {item.name_ar}
                     </MenuItem>
                   ))}
@@ -996,18 +978,8 @@ const Products = () => {
               <Select
                 multiple
                 displayEmpty
-                // value={personName}
                 value={editProdBranches}
-                // onChange={handleChange}
                 input={<OutlinedInput />}
-                // renderValue={selected => {
-                //   if (selected.length === 0) {
-                //     return <em>Placeholder</em>
-                //   }
-
-                //   return selected.join(', ')
-                // }}
-                // MenuProps={MenuProps}
                 onChange={e => {
                   console.log(e.target.value)
                   setEditProdBranches([...e.target.value])
@@ -1020,11 +992,7 @@ const Products = () => {
                 {branches &&
                   Array.isArray(branches) &&
                   branches.map((item, index) => (
-                    <MenuItem
-                      key={index}
-                      value={item.id}
-                      // style={getStyles(name, personName, theme)}
-                    >
+                    <MenuItem key={index} value={item.id}>
                       {item.name_ar}
                     </MenuItem>
                   ))}
