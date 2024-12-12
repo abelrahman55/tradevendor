@@ -3213,13 +3213,6 @@ ms@^2.1.1, ms@2.1.2:
   resolved "https://registry.npmjs.org/ms/-/ms-2.1.2.tgz"
   integrity sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==
 
-mui-file-input@^6.0.0:
-  version "6.0.0"
-  resolved "https://registry.npmjs.org/mui-file-input/-/mui-file-input-6.0.0.tgz"
-  integrity sha512-obxuGvY2+SuafXUdKOq06jw/Ams3xPsYafkSb71wmnC2jz6k+DHeKomXlawqAUM7w6WbRy2J3mQ4yoRLZYMx3A==
-  dependencies:
-    pretty-bytes "^6.1.1"
-
 multipipe@^1.0.2:
   version "1.0.2"
   resolved "https://registry.npmjs.org/multipipe/-/multipipe-1.0.2.tgz"
@@ -3536,11 +3529,6 @@ prettier@2.8.4:
   version "2.8.4"
   resolved "https://registry.npmjs.org/prettier/-/prettier-2.8.4.tgz"
   integrity sha512-vIS4Rlc2FNh0BySk3Wkd6xmwxB0FpOndW5fisM5H8hsZSxU2VWVB5CWIkIjWvrHjIhxk2g3bfMKM87zNTrZddw==
-
-pretty-bytes@^6.1.1:
-  version "6.1.1"
-  resolved "https://registry.npmjs.org/pretty-bytes/-/pretty-bytes-6.1.1.tgz"
-  integrity sha512-mQUvGU6aUFQ+rNvTIAcZuWGRT9a6f6Yrg9bHs4ImKF+HZCEK+plBvnAZYSIQztknZF2qnzNtr6F8s0+IuptdlQ==
 
 prismjs@1.29.0:
   version "1.29.0"

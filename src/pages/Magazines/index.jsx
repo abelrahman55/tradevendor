@@ -48,7 +48,6 @@ import { CiCirclePlus } from 'react-icons/ci'
 // import 'leaflet/dist/leaflet.css'
 // import L from 'leaflet'
 import moment from 'moment'
-import { MuiFileInput } from 'mui-file-input'
 
 // delete L.Icon.Default.prototype._getIconUrl
 // L.Icon.Default.mergeOptions({
@@ -157,7 +156,7 @@ const BranchesPage = () => {
       )
     }
   }
-   
+
   const [position, setPosition] = useState(null)
   const [prodLoading, setProdLoading] = useState(false)
 
