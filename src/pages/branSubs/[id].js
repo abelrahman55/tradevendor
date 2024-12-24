@@ -374,7 +374,7 @@ const BranSubs = () => {
           setBranches(res.data.data)
           console.log(res.data.data)
           if (res.data.data.length > 0) {
-            setNewBranch({ ...newBranch, branch_id: res.data.data[0]?.id })
+            // setNewBranch({ ...newBranch, branch_id: res.data.data[0]?.id })
           }
         } else if (res.data.status == 'error') {
           toast.error(res.data.message)
