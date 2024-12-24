@@ -479,7 +479,7 @@ const ProductAttributes = () => {
         rows={categories ? categories : []}
         rowHeight={62}
         columns={columns}
-        pageSizeOptions={[5, 10]}
+        pageSizeOptions={[5, 10, 20, 40]}
         disableRowSelectionOnClick
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
@@ -527,7 +527,15 @@ const ProductAttributes = () => {
         </DialogActions>
       </Dialog>
 
-      <Dialog fullWidth maxWidth='md' scroll='body' onClose={handleClose} open={showAddCatModal}>
+      <Dialog
+        fullWidth
+        maxWidth='md'
+        scroll='body'
+        onClose={() => {
+          setShowAddCatModal(false)
+        }}
+        open={showAddCatModal}
+      >
         <DialogTitle
           component='div'
           sx={{
@@ -609,7 +617,13 @@ const ProductAttributes = () => {
             <Button disabled={addLoading} type='submit' variant='contained' onClick={handleAddFile}>
               {t('add')}
             </Button>
-            <Button color='secondary' variant='tonal' onClick={handleClose}>
+            <Button
+              color='secondary'
+              variant='tonal'
+              onClick={() => {
+                setShowAddCatModal(false)
+              }}
+            >
               {t('cancel')}
             </Button>
           </Box>

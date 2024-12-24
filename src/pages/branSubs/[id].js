@@ -69,6 +69,7 @@ const BranSubs = () => {
     description_en: '',
     description_ar: ''
   })
+  const [showChangeStatus, setShowChangeStatus] = useState(false)
 
   // const navigate = useNavigate()
   const [showEditModal, setShowEditModal] = useState(false)
@@ -148,7 +149,7 @@ const BranSubs = () => {
         return (
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-              <img style={{ width: '100px' }} src={image} alt='' />
+              <img style={{ width: '40px' }} src={image} alt='' />
             </Box>
           </Box>
         )
@@ -194,6 +195,75 @@ const BranSubs = () => {
     },
     {
       flex: 0.1,
+      field: 'is_active 1',
+      minWidth: 220,
+      headerName: `${t('status')}`,
+      renderCell: ({ row }) => {
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <Typography noWrap sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                {row?.is_active == 1 ? t('showen') : t('hidden')}
+              </Typography>
+            </Box>
+          </Box>
+        )
+      }
+    },
+    {
+      flex: 0.1,
+      field: 'Change_status',
+      minWidth: 220,
+      headerName: `${t('change_status')}`,
+      renderCell: ({ row }) => {
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <Typography noWrap sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                <button
+                  onClick={() => {
+                    setShowChangeStatus(true)
+                    setRowData(row)
+                  }}
+                  className='btn btn-primary'
+                >
+                  {t('change_status')}
+                </button>
+              </Typography>
+            </Box>
+          </Box>
+        )
+      }
+    },
+    {
+      flex: 0.1,
+      field: 'edit',
+      minWidth: 220,
+      headerName: `${t('edit')}`,
+      renderCell: ({ row }) => {
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <Typography noWrap sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                <button
+                  onClick={() => {
+                    setShowEditModal(true)
+                    setRowData(row)
+                    setImgUrl(row?.image)
+                  }}
+                  className='btn btn-primary'
+                >
+                  {t('edit')}
+                </button>
+              </Typography>
+            </Box>
+          </Box>
+        )
+      }
+    },
+
+    {
+      flex: 0.1,
       field: 'Remove',
       minWidth: 220,
       headerName: `${t('Remove')}`,
@@ -209,7 +279,7 @@ const BranSubs = () => {
                   }}
                   className='btn btn-primary'
                 >
-                  remove
+                  {t('Remove')}
                 </button>
               </Typography>
             </Box>
@@ -262,21 +332,37 @@ const BranSubs = () => {
       })
   }
 
-  const notAssignFunction = async () => {
-    await axios
-      .get(`${BASE_URL}branches/branch_not_ass_subs/` + query?.id + `?store_id=${storeData?.store_id ?? storeData?.id}`)
-      .then(res => {
-        console.log(res)
-        if (res.data.status == 'success') {
-          setNotAssign(res.data.result)
-        } else if (res.data.status == 'error') {
-          toast.error(res.data.message)
-        } else {
-          toast.error('حدث خطأ ما')
-        }
-      })
-      .catch(e => console.log(e))
-      .finally(() => {})
+  const handleAddFile = async () => {
+    setAddLoading(true)
+    try {
+      // رفع الصورة الواحدة
+      const formDataImage = new FormData()
+      formDataImage.append('image', img) // تأكد أن `imageFile` هو ملف الصورة الواحد
+
+      const imageResponse = await axios.post(`${BASE_URL}img_upload`, formDataImage)
+
+      const image = imageResponse.data // الحصول على رابط أو مسار الصورة
+
+      // تجهيز بيانات الطلب النهائي بعد رفع الصورة والصوت
+      const requestData = {
+        ...newBranch,
+        image: image?.data.image,
+        branch_id: query?.id
+      }
+
+      // إرسال الطلب النهائي إلى السيرفر
+      await axios.post(`${BASE_URL}subcategories/add_new`, { ...requestData })
+
+      // استدعاء الدالة بعد الإضافة
+      getCategories()
+      toast.success('Successfully added!')
+    } catch (error) {
+      console.error(error)
+      toast.error('Failed to add new item.')
+    } finally {
+      setShowAddCatModal(false)
+      setAddLoading(false)
+    }
   }
 
   const storeBranches = async () => {
@@ -308,55 +394,7 @@ const BranSubs = () => {
 
   useEffect(() => {
     getCategories()
-    notAssignFunction()
   }, [query?.id])
-
-  const handleAddFile = async () => {
-    setAddLoading(true)
-    try {
-      // تجهيز بيانات الطلب النهائي بعد رفع الصورة والصوت
-      const requestData = {
-        branch_id: query?.id,
-        subs: selectedSubs.includes('all') ? notAssign.map(it => it.id).join('**') : selectedSubs.join('**')
-      }
-      await axios.post(`${BASE_URL}branches/assign_subs/${query?.id}`, { ...requestData })
-
-      // استدعاء الدالة بعد الإضافة
-      getCategories()
-      notAssignFunction()
-      toast.success('Successfully added!')
-    } catch (error) {
-      console.error(error)
-      toast.error('Failed to add new item.')
-    } finally {
-      setShowAddCatModal(false)
-      setAddLoading(false)
-    }
-  }
-
-  const handleShow_hide = async () => {
-    setChangeStatusLoading(true)
-    const token = localStorage.getItem('tradeVenddor')
-    await axios
-      .get(`${BASE_URL}categories/update_status/${rowData?.id}token=${token}`)
-      .then(res => {
-        console.log(res.data)
-        if (res?.data && res?.data?.status == 'success') {
-          toast.success(`تم ${rowData.is_active == '1' ? 'إلغاء تنشيط' : 'تنشيط'} الفئة بنجاح`)
-          getCategories()
-        } else if (res.data.status == 'error') {
-          toast.error(res.data.message)
-        } else {
-          toast.error('حدث خطأ ما')
-        }
-      })
-      .catch(e => console.log(e))
-      .finally(() => {
-        setChangeStatusModal(false)
-        setChangeStatusLoading(false)
-        setRowData({})
-      })
-  }
 
   const getStoreSubcategories = async () => {
     const token = localStorage.getItem('TradeOfferToken')
@@ -378,6 +416,27 @@ const BranSubs = () => {
       .catch(e => console.log(e))
   }
 
+  const changeStatus = () => {
+    setAddLoading(true)
+    axios
+      .get(BASE_URL + 'subcategories/update_status/' + rowData?.id)
+      .then(res => {
+        if (res.data.status == 'success') {
+          setShowChangeStatus(false)
+          getCategories()
+          toast.success(res.data.message)
+        } else if (res.data.status == 'faild') {
+          toast.error(res.data.message)
+        } else {
+          toast.error('حدث خطأ ما')
+        }
+      })
+      .catch(e => console.log(e))
+      .finally(() => {
+        setAddLoading(false)
+      })
+  }
+
   const handleClose = () => {
     setOpen(false)
     setSelectedCheckbox([])
@@ -392,11 +451,15 @@ const BranSubs = () => {
         console.log(searchValue)
 
         const newData = originalData.filter(cat => {
-          if (searchValue.length >= 1 && !cat.name_ar.includes(searchValue) && !cat.name_en.includes(searchValue)) {
-            return false
+          if (
+            searchValue.length > 0 &&
+            (cat.title_ar.toLowerCase().includes(searchValue.toLowerCase()) ||
+              cat.title_en.toLowerCase().includes(searchValue.toLowerCase()))
+          ) {
+            return true
           }
 
-          return true
+          return false
         })
         setCategoreis(newData)
       } else {
@@ -425,13 +488,12 @@ const BranSubs = () => {
       // تجهيز بيانات الطلب النهائي بعد رفع الصورة والصوت
       const requestData = {
         ...rowData,
-        meta: rowData?.meta,
         image: editImg ? image?.data.image : rowData?.image,
-        store_id: storeData?.store_id ?? storeData?.id
+        category_id: query?.id
       }
 
       // إرسال الطلب النهائي إلى السيرفر
-      await axios.post(`${BASE_URL}products/update_product/${rowData?.id}`, { ...requestData })
+      await axios.post(`${BASE_URL}subcategories/update_one/${rowData?.id}`, { ...requestData })
 
       // استدعاء الدالة بعد الإضافة
       getCategories()
@@ -460,7 +522,6 @@ const BranSubs = () => {
         if (res.data.status == 'success') {
           setShowUpStock(false)
           getCategories()
-          notAssignFunction()
           toast.success(res.data.message)
         } else if (res.data.status == 'error') {
           toast.error(res.data.message)
@@ -478,6 +539,18 @@ const BranSubs = () => {
     <>
       <div className='rowDiv flex-2-1 page_padding'>
         <div>
+          <div className='my-2 search_item'>
+            <div className='field_input'>
+              <CustomTextField
+                onChange={e => {
+                  setSearchValue(e.target.value)
+                }}
+                fullWidth
+                label={`${t('search_here')}`}
+                placeholder={t('search_here')}
+              />
+            </div>
+          </div>
           <div className='title_add d-flex align-items-center justify-content-between mb-2'>
             <h5>{`${t('subs')}`}</h5>
             <button
@@ -486,7 +559,7 @@ const BranSubs = () => {
               }}
               className='btn btn-success'
             >
-              {t('assign')}
+              {t('add')}
             </button>
           </div>
 
@@ -500,7 +573,7 @@ const BranSubs = () => {
         rows={categories ? categories : []}
         rowHeight={62}
         columns={columns}
-        pageSizeOptions={[5, 10]}
+        pageSizeOptions={[5, 10, 20, 40]}
         disableRowSelectionOnClick
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
@@ -565,7 +638,7 @@ const BranSubs = () => {
             pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
           }}
         >
-          <Typography variant='h3'>{`ass_new_subs`}</Typography>
+          <Typography variant='h3'>{t('Add New Subcategory')}</Typography>
         </DialogTitle>
         <DialogContent
           sx={{
@@ -574,34 +647,48 @@ const BranSubs = () => {
           }}
         >
           <Box sx={{ my: 4 }}>
-            <FormControl style={{ width: '100%' }}>
-              <InputLabel htmlFor='outlined-age-native-simple'>{t('branches')}</InputLabel>
-              <Select
-                multiple
-                displayEmpty
-                value={selectedSubs}
-                input={<OutlinedInput />}
+            <FormControl fullWidth>
+              <CustomTextField
                 onChange={e => {
-                  console.log(e.target.value)
-                  setSelectedSubs([...e.target.value])
+                  setNewBranch({ ...newBranch, title_ar: e.target.value })
                 }}
-                inputProps={{ 'aria-label': 'Without label' }}
-              >
-                <MenuItem disabled value=''>
-                  <em>Placeholder</em>
-                </MenuItem>
-                <MenuItem key={0} value={'all'}>
-                  all
-                </MenuItem>
-                {notAssign &&
-                  Array.isArray(notAssign) &&
-                  notAssign.map((item, index) => (
-                    <MenuItem key={index} value={item.id}>
-                      {item.title_ar}
-                    </MenuItem>
-                  ))}
-              </Select>
+                fullWidth
+                label={`${t('name_ar')}`}
+                placeholder={t('name_ar')}
+              />
             </FormControl>
+          </Box>
+          <Box sx={{ my: 4 }}>
+            <FormControl fullWidth>
+              <CustomTextField
+                onChange={e => {
+                  setNewBranch({ ...newBranch, title_en: e.target.value })
+                }}
+                fullWidth
+                label={`${t('name_en')}`}
+                placeholder={t('name_en')}
+              />
+            </FormControl>
+          </Box>
+
+          <Box sx={{ my: 4 }}>
+            <div className='field_input'>
+              <label htmlFor=''>{t('img')}</label>
+              <input
+                type='file'
+                onChange={e => {
+                  setImg(e.target.files[0])
+                  setImgUrl(URL.createObjectURL(e.target.files[0]))
+                }}
+              />
+            </div>
+            <div>
+              {imgUrl != '' && (
+                <div className='my-2'>
+                  <img style={{ width: '100px' }} src={imgUrl} alt='' />
+                </div>
+              )}
+            </div>
           </Box>
         </DialogContent>
         <DialogActions
@@ -646,7 +733,7 @@ const BranSubs = () => {
             pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
           }}
         >
-          <Typography variant='h3'>{`Edit Product`}</Typography>
+          <Typography variant='h3'>{`Edit  Subcategory`}</Typography>
         </DialogTitle>
         <DialogContent
           sx={{
@@ -657,9 +744,9 @@ const BranSubs = () => {
           <Box sx={{ my: 4 }}>
             <FormControl fullWidth>
               <CustomTextField
-                value={rowData?.name_ar}
+                value={rowData?.title_ar}
                 onChange={e => {
-                  setRowData({ ...rowData, name_ar: e.target.value })
+                  setRowData({ ...rowData, title_ar: e.target.value })
                 }}
                 fullWidth
                 label={`${t('name_ar')}`}
@@ -670,9 +757,9 @@ const BranSubs = () => {
           <Box sx={{ my: 4 }}>
             <FormControl fullWidth>
               <CustomTextField
-                value={rowData?.name_en}
+                value={rowData?.title_en}
                 onChange={e => {
-                  setRowData({ ...rowData, name_en: e.target.value })
+                  setRowData({ ...rowData, title_en: e.target.value })
                 }}
                 fullWidth
                 label={`${t('name_en')}`}
@@ -699,104 +786,6 @@ const BranSubs = () => {
                 </div>
               )}
             </div>
-          </Box>
-
-          <Box sx={{ my: 4 }}>
-            <FormControl fullWidth>
-              <CustomTextField
-                value={rowData?.description_ar}
-                onChange={e => {
-                  setRowData({ ...rowData, description_ar: e.target.value })
-                }}
-                fullWidth
-                label={`${t('description_ar')}`}
-                placeholder={t('description_ar')}
-              />
-            </FormControl>
-          </Box>
-
-          <Box sx={{ my: 4 }}>
-            <FormControl fullWidth>
-              <CustomTextField
-                value={rowData?.description_en}
-                onChange={e => {
-                  setrow({ ...rowData, description_en: e.target.value })
-                }}
-                fullWidth
-                label={`${t('description_en')}`}
-                placeholder={t('description_en')}
-              />
-            </FormControl>
-          </Box>
-          {/*
-          <Box sx={{ my: 4 }}>
-            <FormControl fullWidth>
-              <CustomTextField
-                value={rowData?.price}
-                onChange={e => {
-                  setRowData({ ...rowData, price: e.target.value })
-                }}
-                fullWidth
-                label={`${t('total_price')}`}
-                placeholder={t('total_price')}
-              />
-            </FormControl>
-          </Box>
-          <Box sx={{ my: 4 }}>
-            <FormControl style={{ width: '100%' }}>
-              <InputLabel htmlFor='outlined-age-native-simple'>{t('branches')}</InputLabel>
-              <Select
-                native
-                label='Age'
-                defaultValue=''
-                inputProps={{
-                  name: 'age',
-                  id: 'outlined-age-native-simple'
-                }}
-                value={rowData?.branch_id}
-                onChange={e => {
-                  console.log(e.target.value)
-                  setRowData({ ...rowData, branch_id: e.target.value })
-                }}
-              >
-                {branches &&
-                  branches?.map(it => {
-                    return (
-                      <option key={it.id} value={it.id}>
-                        {it.name_ar}
-                      </option>
-                    )
-                  })}
-              </Select>
-            </FormControl>
-          </Box> */}
-
-          <Box sx={{ my: 4 }}>
-            <FormControl fullWidth>
-              <CustomTextField
-                value={rowData?.discount}
-                onChange={e => {
-                  setRowData({ ...rowData, discount: e.target.value })
-                }}
-                fullWidth
-                label={`${t('discount')}`}
-                placeholder={t('discount')}
-              />
-            </FormControl>
-          </Box>
-
-          <Box sx={{ my: 4 }}>
-            <FormControl fullWidth>
-              <CustomTextField
-                value={rowData?.meta}
-                onChange={e => {
-                  setRowData({ ...rowData, meta: e.target.value })
-                }}
-                fullWidth
-                label={`${t('meta')}`}
-                placeholder={t('meta')}
-              />
-            </FormControl>
           </Box>
         </DialogContent>
         <DialogActions
@@ -872,6 +861,50 @@ const BranSubs = () => {
                 setShowUpStock(false)
               }}
             >
+              {t('cancel')}
+            </Button>
+          </Box>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        fullWidth
+        maxWidth='md'
+        scroll='body'
+        onClose={() => {
+          setShowChangeStatus(false)
+        }}
+        open={showChangeStatus}
+      >
+        <DialogTitle
+          component='div'
+          sx={{
+            textAlign: 'center',
+            px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`],
+            pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
+          }}
+        >
+          <Typography variant='h3'>{`${t('cha_sta')}`}</Typography>
+        </DialogTitle>
+        <DialogContent
+          sx={{
+            pb: theme => `${theme.spacing(5)} !important`,
+            px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`]
+          }}
+        ></DialogContent>
+        <DialogActions
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`],
+            pb: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
+          }}
+        >
+          <Box className='demo-space-x'>
+            <Button disabled={addLoading} type='submit' variant='contained' onClick={changeStatus}>
+              {t('yes')}
+            </Button>
+            <Button color='secondary' variant='tonal' onClick={handleClose}>
               {t('cancel')}
             </Button>
           </Box>

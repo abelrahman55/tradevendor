@@ -614,13 +614,21 @@ const OfferProducts = () => {
         rows={categories ? categories : []}
         rowHeight={62}
         columns={columns}
-        pageSizeOptions={[5, 10]}
+        pageSizeOptions={[5, 10, 20, 40]}
         disableRowSelectionOnClick
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
       />
 
-      <Dialog fullWidth maxWidth='md' scroll='body' onClose={handleClose} open={open}>
+      <Dialog
+        fullWidth
+        maxWidth='md'
+        scroll='body'
+        onClose={() => {
+          setOpen(false)
+        }}
+        open={open}
+      >
         <DialogTitle
           component='div'
           sx={{
@@ -652,10 +660,22 @@ const OfferProducts = () => {
           }}
         >
           <Box className='demo-space-x'>
-            <Button type='submit' variant='contained' onClick={handleClose}>
+            <Button
+              type='submit'
+              variant='contained'
+              onClick={() => {
+                setOpen(false)
+              }}
+            >
               Submit
             </Button>
-            <Button color='secondary' variant='tonal' onClick={handleClose}>
+            <Button
+              color='secondary'
+              variant='tonal'
+              onClick={() => {
+                setOpen(false)
+              }}
+            >
               Cancel
             </Button>
           </Box>

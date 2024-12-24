@@ -35,23 +35,24 @@ import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
 import TableContainer from '@mui/material/TableContainer'
 import FormControlLabel from '@mui/material/FormControlLabel'
-import { Icon, InputLabel } from '@mui/material'
+import { Icon, InputLabel, MenuItem, OutlinedInput } from '@mui/material'
 import CustomTextField from 'src/@core/components/mui/text-field'
 import { BASE_URL } from 'src/constants'
 import OptionsMenu from 'src/@core/components/option-menu'
 import CustomAvatar from 'src/@core/components/mui/avatar'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
+import { width } from '@mui/system'
 
 const BranchProducts = () => {
   const { query } = useRouter()
   console.log(query?.id)
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   let localData = localStorage.getItem('tradeVenddor')
   let storeData = localData && JSON.parse(localData)
   const [allCategories, setAllCategories] = useState([])
   const [subcategories, setSubcategories] = useState([])
-
+  const [subCats, setSubCats] = useState([])
   const [selectedCategories, setSelectedCategories] = useState([])
   const [showUpStock, setShowUpStock] = useState(false)
 
@@ -67,8 +68,7 @@ const BranchProducts = () => {
     description_en: '',
     description_ar: ''
   })
-
-  // const navigate = useNavigate()
+  const [selectedSubcats, setSelectedSubcats] = useState([])
   const [showEditModal, setShowEditModal] = useState(false)
   const [editImg, setEditImg] = useState('')
   const [open, setOpen] = useState(false)
@@ -146,7 +146,7 @@ const BranchProducts = () => {
         return (
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-              <img style={{ width: '100px' }} src={image} alt='' />
+              <img style={{ width: '40px' }} src={image} alt='' />
             </Box>
           </Box>
         )
@@ -553,11 +553,18 @@ const BranchProducts = () => {
         console.log(searchValue)
 
         const newData = originalData.filter(cat => {
-          if (searchValue.length >= 1 && !cat.name_ar.includes(searchValue) && !cat.name_en.includes(searchValue)) {
-            return false
+          if (
+            (searchValue.length > 0 &&
+              (cat.name_ar.toLowerCase().includes(searchValue.toLowerCase()) ||
+                cat.name_en.toLowerCase().includes(searchValue.toLowerCase()))) ||
+            cat.description_ar.toLowerCase().includes(searchValue.toLowerCase()) ||
+            cat.description_en.toLowerCase().includes(searchValue.toLowerCase()) ||
+            cat.price.toString().toLowerCase().includes(searchValue.toString().toLowerCase())
+          ) {
+            return true
           }
 
-          return true
+          return false
         })
         setCategoreis(newData)
       } else {
@@ -608,6 +615,23 @@ const BranchProducts = () => {
     }
   }
 
+  const getBranSubs = async () => {
+    await axios
+      .get(`${BASE_URL}branches/branch_subs/` + query?.id + `?store_id=${storeData?.store_id ?? storeData?.id}`)
+      .then(res => {
+        console.log(res)
+        if (res.data.status == 'success') {
+          setSubCats(res.data.result)
+        } else if (res.data.status == 'error') {
+          toast.error(res.data.message)
+        } else {
+          toast.error('حدث خطأ ما')
+        }
+      })
+      .catch(e => console.log(e))
+      .finally(() => {})
+  }
+
   const handleEditStock = () => {
     setAddLoading(true)
     axios
@@ -629,12 +653,44 @@ const BranchProducts = () => {
       })
   }
 
+  useEffect(() => {
+    console.log(selectedSubcats)
+    setCategoreis(
+      originalData &&
+        originalData.filter(it => {
+          console.log(it.subcats)
+          if (it.subcats.includes(selectedSubcats[0] * 1)) {
+            return { ...it }
+          }
+
+          return null
+        })
+    )
+  }, [selectedSubcats])
+
+  useEffect(() => {
+    getBranSubs()
+  }, [])
+
   return (
     <>
       <div className='rowDiv flex-2-1 page_padding'>
         <div>
+          <div className='my-2 search_item'>
+            <div className='field_input'>
+              <CustomTextField
+                onChange={e => {
+                  setSearchValue(e.target.value)
+                }}
+                fullWidth
+                label={`${t('search_here')}`}
+                placeholder={t('search_here')}
+              />
+            </div>
+          </div>
+
           <div className='title_add d-flex align-items-center justify-content-between mb-2'>
-            <h5>{`${t('prods')}`}</h5>
+            <h5>{`${t('products')}`}</h5>
             <button
               onClick={() => {
                 setShowAddCatModal(true)
@@ -649,13 +705,49 @@ const BranchProducts = () => {
         </div>
       </div>
 
+      <div className='filter_products'>
+        <div className='w-100 my-2'>
+          <h4>Subcategories</h4>
+          <FormControl style={{ width: '100%' }}>
+            <InputLabel htmlFor='outlined-age-native-simple'>{t('subs')}</InputLabel>
+            <Select
+              native
+              label='Age'
+              defaultValue=''
+              inputProps={{
+                name: 'age',
+                id: 'outlined-age-native-simple'
+              }}
+              value={selectedSubcats}
+              onChange={e => {
+                console.log(e.target.value)
+                setSelectedSubcats([...e.target.value])
+              }}
+            >
+              <option disabled={true}></option>
+              {/*<option key={0} value={'all'}>
+                  {i18n.language == 'ar' ? 'الكل' : 'all'}
+                </option>*/}
+              {subcategories &&
+                subcategories?.map(it => {
+                  return (
+                    <option key={it.id} value={it.id}>
+                      {i18n.language == 'ar' ? it.title_ar : it.title_en}
+                    </option>
+                  )
+                })}
+            </Select>
+          </FormControl>
+        </div>
+      </div>
+
       <DataGrid
         autoHeight
         pagination
         rows={categories ? categories : []}
         rowHeight={62}
         columns={columns}
-        pageSizeOptions={[5, 10]}
+        pageSizeOptions={[5, 10, 20, 40]}
         disableRowSelectionOnClick
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
@@ -720,7 +812,7 @@ const BranchProducts = () => {
             pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
           }}
         >
-          <Typography variant='h3'>{`Add New Product`}</Typography>
+          <Typography variant='h3'>{t('Add_New_Product')}</Typography>
         </DialogTitle>
         <DialogContent
           sx={{
@@ -825,7 +917,7 @@ const BranchProducts = () => {
           </Box>
           <Box sx={{ my: 4 }}>
             <FormControl style={{ width: '100%' }}>
-              <InputLabel htmlFor='outlined-age-native-simple'>{t('subcategories')}</InputLabel>
+              <InputLabel htmlFor='outlined-age-native-simple'>{t('subs')}</InputLabel>
               <Select
                 native
                 label='Age'
@@ -840,11 +932,12 @@ const BranchProducts = () => {
                   setNewBranch({ ...newBranch, subcats: e.target.value })
                 }}
               >
+                <option disabled={true}></option>
                 {subcategories &&
                   subcategories?.map(it => {
                     return (
                       <option key={it.id} value={it.id}>
-                        {it.title_ar}
+                        {i18n.language === 'ar' ? it.title_ar : it.title_en}
                       </option>
                     )
                   })}
@@ -920,7 +1013,7 @@ const BranchProducts = () => {
             pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
           }}
         >
-          <Typography variant='h3'>{`Edit Product`}</Typography>
+          <Typography variant='h3'>{t(`Edit_Product`)}</Typography>
         </DialogTitle>
         <DialogContent
           sx={{
@@ -1115,7 +1208,7 @@ const BranchProducts = () => {
             pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
           }}
         >
-          <Typography variant='h3'>{`Edit stock`}</Typography>
+          <Typography variant='h3'>{`${t('Edit_stock')}`}</Typography>
         </DialogTitle>
         <DialogContent
           sx={{

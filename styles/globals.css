@@ -81,3 +81,28 @@ input[type="file"] {
 .css-axafay-MuiDataGrid-virtualScroller {
   overflow-y: auto !important;
 }
+
+.parent_stauts {
+  border: 1px solid black;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.parent_stauts .child_status {
+  background-color: black;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: none;
+
+}
+
+.parent_stauts.active .child_status {
+  display: block;
+}

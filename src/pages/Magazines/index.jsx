@@ -8,21 +8,11 @@ import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import { Loader } from 'rsuite'
 import Box from '@mui/material/Box'
-import Grid from '@mui/material/Grid'
-import Card from '@mui/material/Card'
-import Table from '@mui/material/Table'
 import Button from '@mui/material/Button'
 import Avatar from '@mui/material/Avatar'
 import Dialog from '@mui/material/Dialog'
 import Select from '@mui/material/Select'
 
-import Tooltip from '@mui/material/Tooltip'
-import Checkbox from '@mui/material/Checkbox'
-import TableRow from '@mui/material/TableRow'
-import TableBody from '@mui/material/TableBody'
-import TableCell from '@mui/material/TableCell'
-import TableHead from '@mui/material/TableHead'
-import IconButton from '@mui/material/IconButton'
 import { DataGrid } from '@mui/x-data-grid'
 import { getInitials } from 'src/@core/utils/get-initials'
 import { hexToRGBA } from 'src/@core/utils/hex-to-rgba'
@@ -30,13 +20,11 @@ import { hexToRGBA } from 'src/@core/utils/hex-to-rgba'
 import Typography from '@mui/material/Typography'
 import FormControl from '@mui/material/FormControl'
 import DialogTitle from '@mui/material/DialogTitle'
-import AvatarGroup from '@mui/material/AvatarGroup'
-import CardContent from '@mui/material/CardContent'
 import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
 import TableContainer from '@mui/material/TableContainer'
 import FormControlLabel from '@mui/material/FormControlLabel'
-import { Icon, InputLabel } from '@mui/material'
+import { Icon, InputLabel, MenuItem, OutlinedInput } from '@mui/material'
 import CustomTextField from 'src/@core/components/mui/text-field'
 import { BASE_URL } from 'src/constants'
 import OptionsMenu from 'src/@core/components/option-menu'
@@ -57,8 +45,7 @@ import moment from 'moment'
 // })
 
 const BranchesPage = () => {
-  const { t } = useTranslation()
-  console.log(t)
+  const { t, i18n } = useTranslation()
   let localData = localStorage.getItem('tradeVenddor')
   let storeData = localData && JSON.parse(localData)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -66,6 +53,9 @@ const BranchesPage = () => {
   const [endDate, setEndDate] = useState(new Date()) // Added state for end date
   const [imagesList, setImagesList] = useState([{ img: null, imgUrl: '', id: 1 }])
   const [branches, setBranches] = useState([])
+  const [editProdBranches, setEditProdBranches] = useState([])
+
+  const [selectedBranches, setSelectedBranches] = useState([])
   const [coverImg, setCoverImg] = useState(null)
   const [subcategories, setSubcategories] = useState([])
 
@@ -85,6 +75,8 @@ const BranchesPage = () => {
     lng: '',
     covered_zone: 4
   })
+  const [editCoverImg, setEditCoverImg] = useState(null)
+  const [editCoverImgUrl, setEditCoverImgUrl] = useState('')
   const [allCategories, setAllCategories] = useState([])
   const [showEditModal, setShowEditModal] = useState(false)
   const [imgEdit, setImgEdit] = useState(null)
@@ -339,7 +331,7 @@ const BranchesPage = () => {
       flex: 0.1,
       field: 'branch',
       minWidth: 220,
-      headerName: `${t('branch')}`,
+      headerName: `${t('branch_name')}`,
       renderCell: ({ row }) => {
         const { branch } = row
 
@@ -347,38 +339,34 @@ const BranchesPage = () => {
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
               <Typography noWrap sx={{ color: 'text.secondary', fontWeight: 500 }}>
-                <p>{branch?.name_ar}</p>
+                <p>{i18n.language == 'ar' ? branch?.name_ar : branch?.name_en}</p>
               </Typography>
             </Box>
           </Box>
         )
       }
     },
+    {
+      flex: 0.1,
+      field: 'status',
+      minWidth: 220,
+      headerName: `${t('status')}`,
+      renderCell: ({ row }) => {
+        const { id } = row
 
-    // {
-    //   flex: 0.1,
-    //   field: 'Edit',
-    //   minWidth: 220,
-    //   headerName: `${t('edit')}`,
-    //   renderCell: ({ row }) => {
-    //     const { id} = row
-
-    //     return (
-    //       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-    //         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-    //           <Button
-    //             onClick={() => {
-    //               setShowEditModal(true)
-    //               setRowData(row)
-    //               setImgEditUrl(row.image)
-    //             }}
-    //             variant='contained'
-    //           >{`${t('edit')}`}</Button>
-    //         </Box>
-    //       </Box>
-    //     )
-    //   }
-    // },
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              {row?.hidden == 0 ? (
+                <p>{i18n.language == 'ar' ? 'ظاهر' : 'appearance'}</p>
+              ) : (
+                <p>{i18n.language == 'ar' ? 'مخفى' : 'Hidden'}</p>
+              )}
+            </Box>
+          </Box>
+        )
+      }
+    },
     {
       flex: 0.1,
       field: 'images',
@@ -398,6 +386,7 @@ const BranchesPage = () => {
         )
       }
     },
+
     {
       flex: 0.1,
       field: 'imageee',
@@ -421,7 +410,7 @@ const BranchesPage = () => {
       flex: 0.1,
       field: 'delete',
       minWidth: 220,
-      headerName: `${t('delete')}`,
+      headerName: `${t('Delete')}`,
       renderCell: ({ row }) => {
         const { id } = row
 
@@ -436,8 +425,65 @@ const BranchesPage = () => {
                 }}
                 className='btn btn-primary'
               >
-                delete
+                {t('Delete')}
               </button>
+            </Box>
+          </Box>
+        )
+      }
+    },
+
+    {
+      flex: 0.1,
+      field: 'edit',
+      minWidth: 220,
+      headerName: `${t('edit')}`,
+      renderCell: ({ row }) => {
+        const { id } = row
+
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <button
+                onClick={() => {
+                  // console.log(row)
+
+                  // return
+
+                  setShowEditModal(true)
+                  setRowData(row)
+                  setStartDate(new Date(row?.start_at))
+                  setEndDate(new Date(row?.end_at))
+                  setImgEditUrl(row?.cover)
+                  setEditProdBranches(row?.branches)
+                }}
+                className='btn btn-primary'
+              >
+                {t('edit')}
+              </button>
+            </Box>
+          </Box>
+        )
+      }
+    },
+    {
+      flex: 0.1,
+      field: 'hidden',
+      minWidth: 220,
+      headerName: `${t('change_status')}`,
+      renderCell: ({ row }) => {
+        const { id } = row
+
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <Button
+                onClick={() => {
+                  setChangeStatusModal(true)
+                  setRowData(row)
+                }}
+                variant='contained'
+              >{`${t('change_status')}`}</Button>
             </Box>
           </Box>
         )
@@ -759,44 +805,39 @@ const BranchesPage = () => {
     getStoreBranches()
   }, [])
 
-  //selectedMainImageUrl
-  const handleAddNewCategory = async (imageLink, imageLink2) => {
+  const handleShow_hide = async () => {
+    setChangeStatusLoading(true)
     const token = localStorage.getItem('tradeVenddor')
-
-    const dataset = {
-      ...newCat,
-      image_ar: imageLink,
-      image_en: imageLink2
-    }
-
     await axios
-      .post(`${BASE_URL}branches/add_new?token=${token}`, dataset)
+      .get(`${BASE_URL}offers/change_status/${rowData?.id}`)
       .then(res => {
+        console.log(res.data)
         if (res?.data && res?.data?.status == 'success') {
-          toast.success('تم إضافة فئة جديدة بنجاح')
+          toast.success(`تم ${rowData.hidden == '0' ? 'إلغاء تنشيط' : 'تنشيط'} الفئة بنجاح`)
           getAllData()
-          setShowAddCatModal(false)
         } else if (res.data.status == 'error') {
-          toast.error('هناك مشكلة ! حاول مجدداً')
+          toast.error(res.data.message)
         } else {
           toast.error('حدث خطأ ما')
         }
       })
       .catch(e => console.log(e))
       .finally(() => {
-        setNewCat({
-          title_ar: '',
-          title_en: '',
-          color: '',
-          textColor: '',
-          type: 'main',
-          description_ar: '',
-          description_en: ''
-        })
-
-        setImg('')
-        setSelectedFile(null)
+        setChangeStatusModal(false)
+        setChangeStatusLoading(false)
+        setRowData({})
       })
+  }
+
+  const formatDate = date => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    const seconds = String(date.getSeconds()).padStart(2, '0')
+
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
   }
 
   const handelEditBran = () => {
@@ -810,14 +851,20 @@ const BranchesPage = () => {
             ...rowData,
             user_id: storeData?.user_id,
             store_id: storeData?.store_id ?? storeData?.id,
-            image: res2.data?.data?.image
+            cover: res2.data?.data?.image,
+            start_at: formatDate(startDate) ?? rowData?.start_at,
+            end_at: formatDate(endDate) ?? rowData?.end_at,
+            branches: editProdBranches.includes('all')
+              ? editProdBranches.map(it => it.id).join('**')
+              : editProdBranches.join('**')
           }
+
           axios
-            .post(BASE_URL + `branches/update_one/${rowData?.id}`, data_send)
+            .post(BASE_URL + `offers/update_one/${rowData?.id}`, data_send)
             .then(res => {
               if (res.data.status == 'success') {
                 toast.success(res.data.message)
-                getBranchies()
+                getAllData()
                 setShowEditModal(false)
               } else if (res.data.status == 'faild') {
                 toast.error(res.data.message)
@@ -839,14 +886,20 @@ const BranchesPage = () => {
       const data_send = {
         ...rowData,
         user_id: storeData?.user_id,
-        store_id: storeData?.store_id ?? storeData?.id
+        store_id: storeData?.store_id ?? storeData?.id,
+        cover: rowData?.cover,
+        start_at: formatDate(startDate) ?? rowData?.start_at,
+        end_at: formatDate(endDate) ?? rowData?.end_at,
+        branches: editProdBranches.includes('all')
+          ? editProdBranches.map(it => it.id).join('**')
+          : editProdBranches.join('**')
       }
       axios
-        .post(BASE_URL + `branches/update_one/${rowData?.id}`, data_send)
+        .post(BASE_URL + `offers/update_one/${rowData?.id}`, data_send)
         .then(res => {
           if (res.data.status == 'success') {
             toast.success(res.data.message)
-            getBranchies()
+            getAllData()
             setShowEditModal(false)
           } else if (res.data.status == 'faild') {
             toast.error(res.data.message)
@@ -864,17 +917,6 @@ const BranchesPage = () => {
   const handleAddFile = async () => {
     setAddLoading(true)
     let images = ''
-
-    const formatDate = date => {
-      const year = date.getFullYear()
-      const month = String(date.getMonth() + 1).padStart(2, '0')
-      const day = String(date.getDate()).padStart(2, '0')
-      const hours = String(date.getHours()).padStart(2, '0')
-      const minutes = String(date.getMinutes()).padStart(2, '0')
-      const seconds = String(date.getSeconds()).padStart(2, '0')
-
-      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
-    }
 
     try {
       // const uploadPromises = imagesList.map(async (item, index) => {
@@ -908,7 +950,8 @@ const BranchesPage = () => {
         discount: newBranch.discount,
         branch_id: newBranch.branch_id,
         subcategory_id: newBranch.subcategory_id,
-        store_id: storeData.store_id ?? storeData?.id
+        store_id: storeData.store_id ?? storeData?.id,
+        branches: selectedBranches.includes('all') ? branches.map(it => it.id).join('**') : selectedBranches.join('**')
       }
       console.log(requestData)
 
@@ -916,166 +959,14 @@ const BranchesPage = () => {
       getAllData()
       setShowAddCatModal(false)
       toast.success('Successfully added!')
+      setEndDate(new Date())
+      setStartDate(new Date())
     } catch (error) {
       console.error(error)
       toast.error('Failed to add new item.')
     } finally {
       setAddLoading(false)
     }
-  }
-
-  const updateCategoryData = async () => {
-    setUpdateLoading(true)
-    const token = localStorage.getItem('tradeVenddor')
-    if (editImgAr != null) {
-      if (editImgEn != null) {
-        const form1 = new FormData()
-        form1.append('image', editImgAr)
-        axios
-          .post(`${BASE_URL}img_upload`, form1)
-          .then(res1 => {
-            if (res1.data.status == 'success') {
-              const form2 = new FormData()
-              form2.append('image', editImgEn)
-              axios.post(`${BASE_URL}img_upload`, form2).then(res2 => {
-                if (res2.data.status == 'success') {
-                  const data_send = {
-                    ...rowData,
-                    image_ar: res1.data?.data?.image,
-                    image_en: res2.data?.data?.image
-                  }
-
-                  axios
-                    .post(`${BASE_URL}branches/update_one/${rowData.id}?token=${token}`, data_send)
-                    .then(res => {
-                      if (res?.data && res?.data?.status == 'success') {
-                        toast.success('تم تعديل الفئة بنجاح')
-                        getCategories()
-                        console.log(res.data.result)
-                      } else if (res.data.status == 'error') {
-                        toast.error('هناك مشكلة ! حاول مجدداً')
-                      } else {
-                        toast.error('حدث خطأ ما')
-                      }
-                    })
-                    .catch(e => console.log(e))
-                    .finally(() => {
-                      setUpdateModal(false)
-                      setRowData({})
-                      setUpdateLoading(false)
-                      setImg('')
-                      setImgUrl('')
-                      setSelectedFile(null)
-                    })
-                }
-              })
-            }
-          })
-          .catch(e => console.log(e))
-      } else {
-        const form1 = new FormData()
-        form1.append('image', editImgAr)
-        axios
-          .post(`${BASE_URL}img_upload`, form1)
-          .then(res1 => {
-            if (res1.data.status == 'success') {
-              const data_send = {
-                ...rowData,
-                image_ar: res1.data?.data?.image
-              }
-              axios
-                .post(`${BASE_URL}branches/update_one/${rowData.id}?token=${token}`, data_send)
-                .then(res => {
-                  if (res?.data && res?.data?.status == 'success') {
-                    toast.success('تم تعديل الفئة بنجاح')
-                    getCategories()
-                    console.log(res.data.result)
-                  } else if (res.data.status == 'error') {
-                    toast.error('هناك مشكلة ! حاول مجدداً')
-                  } else {
-                    toast.error('حدث خطأ ما')
-                  }
-                })
-                .catch(e => console.log(e))
-                .finally(() => {
-                  setUpdateModal(false)
-                  setRowData({})
-                  setUpdateLoading(false)
-                  setImg('')
-                  setImgUrl('')
-                  setSelectedFile(null)
-                })
-            }
-          })
-          .catch(e => console.log(e))
-      }
-    } else {
-      if (editImgEn != null) {
-        const form2 = new FormData()
-        form2.append('image', editImgEn)
-        axios.post(`${BASE_URL}img_upload`, form2).then(res2 => {
-          if (res2.data.status == 'success') {
-            const data_send = {
-              ...rowData,
-              image_en: res2.data?.data?.image
-            }
-            axios
-              .post(`${BASE_URL}branches/update_one/${rowData.id}?token=${token}`, data_send)
-              .then(res => {
-                if (res?.data && res?.data?.status == 'success') {
-                  toast.success('تم تعديل الفئة بنجاح')
-                  getCategories()
-                  console.log(res.data.result)
-                } else if (res.data.status == 'error') {
-                  toast.error('هناك مشكلة ! حاول مجدداً')
-                } else {
-                  toast.error('حدث خطأ ما')
-                }
-              })
-              .catch(e => console.log(e))
-              .finally(() => {
-                setUpdateModal(false)
-                setRowData({})
-                setUpdateLoading(false)
-                setImg('')
-                setImgUrl('')
-                setSelectedFile(null)
-              })
-          }
-        })
-      } else {
-        const data_send = {
-          ...rowData
-        }
-        axios
-          .post(`${BASE_URL}branches/update_one/${rowData.id}?token=${token}`, data_send)
-          .then(res => {
-            if (res?.data && res?.data?.status == 'success') {
-              toast.success('تم تعديل الفئة بنجاح')
-              getCategories()
-              console.log(res.data.result)
-            } else if (res.data.status == 'error') {
-              toast.error('هناك مشكلة ! حاول مجدداً')
-            } else {
-              toast.error('حدث خطأ ما')
-            }
-          })
-          .catch(e => console.log(e))
-          .finally(() => {
-            setUpdateModal(false)
-            setRowData({})
-            setUpdateLoading(false)
-            setImg('')
-            setImgUrl('')
-            setSelectedFile(null)
-          })
-      }
-    }
-
-    const dataset = {
-      ...rowData
-    }
-    console.log(dataset)
   }
 
   const changeStatus = () => {
@@ -1096,30 +987,6 @@ const BranchesPage = () => {
       .catch(e => console.log(e))
       .finally(() => {
         setAddLoading(false)
-      })
-  }
-
-  const handleShow_hide = async () => {
-    setChangeStatusLoading(true)
-    const token = localStorage.getItem('tradeVenddor')
-    await axios
-      .get(`${BASE_URL}branches/update_status/${rowData?.id}token=${token}`)
-      .then(res => {
-        console.log(res.data)
-        if (res?.data && res?.data?.status == 'success') {
-          toast.success(`تم ${rowData.is_active == '1' ? 'إلغاء تنشيط' : 'تنشيط'} الفئة بنجاح`)
-          getCategories()
-        } else if (res.data.status == 'error') {
-          toast.error(res.data.message)
-        } else {
-          toast.error('حدث خطأ ما')
-        }
-      })
-      .catch(e => console.log(e))
-      .finally(() => {
-        setChangeStatusModal(false)
-        setChangeStatusLoading(false)
-        setRowData({})
       })
   }
 
@@ -1163,10 +1030,6 @@ const BranchesPage = () => {
     )
   }
 
-  const handleDelItem = id => {
-    setImagesList(imagesList.filter(item => item.id !== id))
-  }
-
   // filteraiton part
 
   useEffect(() => {
@@ -1175,11 +1038,17 @@ const BranchesPage = () => {
         console.log(searchValue)
 
         const newData = originalData.filter(cat => {
-          if (searchValue.length >= 1 && !cat.name_ar.includes(searchValue) && !cat.name_en.includes(searchValue)) {
-            return false
+          if (
+            searchValue.length > 0 &&
+            (cat.title_ar.toLowerCase().includes(searchValue.toLowerCase()) ||
+              cat.title_en.toLowerCase().includes(searchValue.toLowerCase()) ||
+              cat.description_ar.toLowerCase().includes(searchValue.toLowerCase()) ||
+              cat.description_en.toLowerCase().includes(searchValue.toLowerCase()))
+          ) {
+            return true
           }
 
-          return true
+          return false
         })
         setData(newData)
       } else {
@@ -1217,6 +1086,18 @@ const BranchesPage = () => {
     <>
       <div className='rowDiv flex-2-1 page_padding'>
         <div>
+          <div className='my-2 search_item'>
+            <div className='field_input'>
+              <CustomTextField
+                onChange={e => {
+                  setSearchValue(e.target.value)
+                }}
+                fullWidth
+                label={`${t('search_here')}`}
+                placeholder={t('search_here')}
+              />
+            </div>
+          </div>
           <div className='title_add d-flex align-items-center justify-content-between mb-2'>
             <h5>{`${t('offers')}`}</h5>
             <Button
@@ -1239,7 +1120,7 @@ const BranchesPage = () => {
         rows={data ? data : []}
         rowHeight={62}
         columns={columns}
-        pageSizeOptions={[5, 10]}
+        pageSizeOptions={[5, 10, 20, 40]}
         disableRowSelectionOnClick
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
@@ -1280,7 +1161,7 @@ const BranchesPage = () => {
                 rows={images ? images : []}
                 rowHeight={62}
                 columns={productsColumns}
-                pageSizeOptions={[5, 10]}
+                pageSizeOptions={[5, 10, 20, 40]}
                 disableRowSelectionOnClick
                 paginationModel={paginationModel}
                 onPaginationModelChange={setPaginationModel}
@@ -1360,7 +1241,7 @@ const BranchesPage = () => {
             pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
           }}
         >
-          <Typography variant='h3'>{`Add New Magazine`}</Typography>
+          <Typography variant='h3'>{t(`Add_New_Magazine`)}</Typography>
         </DialogTitle>
         <DialogContent
           sx={{
@@ -1450,7 +1331,7 @@ const BranchesPage = () => {
           <Box sx={{ my: 4 }}>
             <FormControl style={{ width: '100%' }}>
               <InputLabel htmlFor='outlined-age-native-simple'>{t('branches')}</InputLabel>
-              <Select
+              {/* <Select
                 native
                 label='Age'
                 defaultValue=''
@@ -1464,14 +1345,44 @@ const BranchesPage = () => {
                   setNewBranch({ ...newBranch, branch_id: e.target.value })
                 }}
               >
+                <option disabled={true}></option>
+                <option key={0} value={'all'}>
+                  {i18n.language == 'ar' ? 'الكل' : 'all'}
+                </option>
                 {branches &&
                   branches?.map(it => {
                     return (
                       <option key={it.id} value={it.id}>
-                        {it.name_ar}
+                        {i18n.language == 'ar' ? it.name_ar : it.name_en}
                       </option>
                     )
                   })}
+              </Select> */}
+
+              <Select
+                multiple
+                displayEmpty
+                value={selectedBranches}
+                input={<OutlinedInput />}
+                onChange={e => {
+                  console.log(e.target.value)
+                  setSelectedBranches([...e.target.value])
+                }}
+                inputProps={{ 'aria-label': 'Without label' }}
+              >
+                <MenuItem disabled value=''>
+                  <em>Placeholder</em>
+                </MenuItem>
+                <MenuItem key={0} value={'all'}>
+                  {i18n.language == 'ar' ? 'الكل' : 'all'}
+                </MenuItem>
+                {branches &&
+                  Array.isArray(branches) &&
+                  branches.map((item, index) => (
+                    <MenuItem key={index} value={item.id}>
+                      {item.name_ar}
+                    </MenuItem>
+                  ))}
               </Select>
             </FormControl>
           </Box>
@@ -1493,11 +1404,15 @@ const BranchesPage = () => {
                   setNewBranch({ ...newBranch, subcategory_id: e.target.value })
                 }}
               >
+                <option disabled={true}></option>
+                {/*<option key={0} value={'all'}>
+                  {i18n.language == 'ar' ? 'الكل' : 'all'}
+                </option>*/}
                 {subcategories &&
                   subcategories?.map(it => {
                     return (
                       <option key={it.id} value={it.id}>
-                        {it.title_ar}
+                        {i18n.language == 'ar' ? it.title_ar : it.title_en}
                       </option>
                     )
                   })}
@@ -1527,7 +1442,7 @@ const BranchesPage = () => {
                   setNewBranch({ ...newBranch, discount: e.target.value })
                 }}
                 fullWidth
-                label={`${t('discount')}`}
+                label={`${t('discount')}%`}
                 placeholder={t('discount')}
               />
             </FormControl>
@@ -1609,7 +1524,7 @@ const BranchesPage = () => {
             pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
           }}
         >
-          <Typography variant='h3'>{`${t('edit_branch')}`}</Typography>
+          <Typography variant='h3'>{`${t('edit_maga')}`}</Typography>
         </DialogTitle>
         <DialogContent
           sx={{
@@ -1619,123 +1534,181 @@ const BranchesPage = () => {
         >
           <Box sx={{ my: 4 }}>
             <FormControl fullWidth>
+              <label htmlFor='start_date'>{t('start_ar')}</label>
+              <DatePicker
+                selected={startDate}
+                onChange={date => setStartDate(date)}
+                showTimeSelect
+                dateFormat='yyyy-MM-dd HH:mm:ss'
+                timeIntervals={1}
+                className={`form-control`}
+              />
+            </FormControl>
+          </Box>
+          <Box sx={{ my: 4 }}>
+            <FormControl fullWidth>
+              <label htmlFor='start_date'>{t('end_at')}</label>
+              <DatePicker
+                selected={endDate}
+                onChange={date => setEndDate(date)}
+                showTimeSelect
+                dateFormat='yyyy-MM-dd HH:mm:ss'
+                timeIntervals={1}
+                className={`form-control`}
+              />
+            </FormControl>
+          </Box>
+
+          <Box sx={{ my: 4 }}>
+            <FormControl fullWidth>
               <CustomTextField
-                value={rowData?.name_ar}
                 onChange={e => {
-                  setRowData({ ...rowData, name_ar: e.target.value })
+                  setRowData({ ...rowData, title_ar: e.target.value })
                 }}
+                value={rowData?.title_ar}
                 fullWidth
                 label={`${t('name_ar')}`}
                 placeholder={t('name_ar')}
               />
             </FormControl>
           </Box>
+
           <Box sx={{ my: 4 }}>
             <FormControl fullWidth>
               <CustomTextField
-                value={rowData?.name_en}
                 onChange={e => {
                   setRowData({ ...rowData, name_en: e.target.value })
                 }}
+                value={rowData?.title_en}
                 fullWidth
                 label={`${t('name_en')}`}
                 placeholder={t('name_en')}
               />
             </FormControl>
           </Box>
+
           <Box sx={{ my: 4 }}>
             <FormControl fullWidth>
               <CustomTextField
-                value={rowData?.address_ar}
                 onChange={e => {
-                  setRowData({ ...rowData, address_ar: e.target.value })
+                  setRowData({ ...rowData, description_ar: e.target.value })
                 }}
+                value={rowData?.description_ar}
                 fullWidth
-                label={`${t('add_ar')}`}
-                placeholder={t('add_ar')}
+                label={`${t('description_ar')}`}
+                placeholder={t('description_ar')}
               />
             </FormControl>
           </Box>
+
           <Box sx={{ my: 4 }}>
             <FormControl fullWidth>
               <CustomTextField
-                value={rowData?.address_en}
                 onChange={e => {
-                  setRowData({ ...rowData, address_en: e.target.value })
+                  setRowData({ ...rowData, description_en: e.target.value })
                 }}
+                value={rowData?.description_en}
                 fullWidth
-                label={`${t('add_en')}`}
-                placeholder={t('add_en')}
+                label={`${t('description_en')}`}
+                placeholder={t('description_en')}
               />
             </FormControl>
           </Box>
+
           <Box sx={{ my: 4 }}>
-            <FormControl fullWidth>
-              <CustomTextField
-                value={rowData?.phone}
+            <FormControl style={{ width: '100%' }}>
+              <InputLabel htmlFor='outlined-age-native-simple'>{t('branches')}</InputLabel>
+              <Select
+                multiple
+                displayEmpty
+                value={editProdBranches}
+                input={<OutlinedInput />}
                 onChange={e => {
-                  setRowData({ ...rowData, phone: e.target.value })
+                  console.log(e.target.value)
+                  setEditProdBranches([...e.target.value])
                 }}
-                fullWidth
-                label={`${t('phone')}`}
-                placeholder={t('phone')}
-              />
-            </FormControl>
-          </Box>
-          <Box sx={{ my: 4 }}>
-            <FormControl fullWidth>
-              <CustomTextField
-                value={rowData?.covered_zone}
-                onChange={e => {
-                  setRowData({ ...rowData, covered_zone: e.target.value })
-                }}
-                fullWidth
-                label={`${t('cov_zon')}`}
-                placeholder={t('cov_zon')}
-              />
-            </FormControl>
-          </Box>
-          <Box sx={{ my: 4 }}>
-            <div className='field_input'>
-              <label htmlFor=''>{t('img')}</label>
-              <input
-                type='file'
-                onChange={e => {
-                  setImgEdit(e.target.files[0])
-                  setImgEditUrl(URL.createObjectURL(e.target.files[0]))
-                }}
-              />
-            </div>
-            <div>
-              {imgEditUrl != '' && (
-                <div className='my-2'>
-                  <img style={{ width: '100px' }} src={imgEditUrl} alt='' />
-                </div>
-              )}
-            </div>
-          </Box>
-          {/* <Box sx={{ my: 4 }}>
-            <div style={{ width: '90%', margin: 'auto' }}>
-              <label htmlFor=''>{t('location')}</label>
-              <MapContainer
-                center={[rowData?.latitude, rowData?.longitude]}
-                zoom={13}
-                style={{ height: '80vh', width: '100%' }}
+                inputProps={{ 'aria-label': 'Without label' }}
               >
-                <TileLayer
-                  url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                <MenuItem disabled value=''>
+                  <em>Placeholder</em>
+                </MenuItem>
+                {branches &&
+                  Array.isArray(branches) &&
+                  branches.map((item, index) => (
+                    <MenuItem key={index} value={item.id}>
+                      {item.name_ar}
+                    </MenuItem>
+                  ))}
+              </Select>
+            </FormControl>
+          </Box>
+
+          <Box sx={{ my: 4 }}>
+            <FormControl style={{ width: '100%' }}>
+              <InputLabel htmlFor='outlined-age-native-simple'>{t('subs')}</InputLabel>
+              <Select
+                native
+                label='Age'
+                defaultValue=''
+                inputProps={{
+                  name: 'age',
+                  id: 'outlined-age-native-simple'
+                }}
+                value={rowData?.subcategory_id}
+                onChange={e => {
+                  console.log(e.target.value)
+                  setRowData({ ...newBranch, subcategory_id: e.target.value })
+                }}
+              >
+                <option disabled={true}></option>
+                {subcategories &&
+                  subcategories?.map(it => {
+                    return (
+                      <option key={it.id} value={it.id}>
+                        {it.title_ar}
+                      </option>
+                    )
+                  })}
+              </Select>
+            </FormControl>
+          </Box>
+
+          <Box sx={{ my: 4 }}>
+            <FormControl style={{ width: '100%' }}>
+              <FormControl fullWidth>
+                <label htmlFor={`file`}>{t('cov_img')}</label>
+                <input
+                  onChange={e => {
+                    setImgEdit(e.target.files[0])
+                    setImgEditUrl(URL.createObjectURL(e.target.files[0]))
+                  }}
+                  type='file'
+                  id={`file`}
                 />
-                <LocationMarker2 />
-              </MapContainer>
-              {rowData && (
-                <div style={{ marginTop: '20px' }}>
-                  <p>Latitude: {rowData.latitude}</p>
-                  <p>Longitude: {rowData.longitude}</p>
-                </div>
-              )}
-            </div>
-          </Box> */}
+              </FormControl>
+            </FormControl>
+          </Box>
+          <div>
+            {imgEditUrl != '' && (
+              <div className='my-2'>
+                <img style={{ width: '100px' }} src={imgEditUrl} alt='' />
+              </div>
+            )}
+          </div>
+
+          <Box sx={{ my: 4 }}>
+            <FormControl fullWidth>
+              <CustomTextField
+                onChange={e => {
+                  setRowData({ ...rowData, discount: e.target.value })
+                }}
+                value={rowData?.discount}
+                fullWidth
+                label={`${t('discount')}%`}
+                placeholder={t('discount')}
+              />
+            </FormControl>
+          </Box>
         </DialogContent>
         <DialogActions
           sx={{
@@ -1749,7 +1722,13 @@ const BranchesPage = () => {
             <Button disabled={addLoading} type='submit' variant='contained' onClick={handelEditBran}>
               {t('edit')}
             </Button>
-            <Button color='secondary' variant='tonal' onClick={handleClose}>
+            <Button
+              color='secondary'
+              variant='tonal'
+              onClick={() => {
+                setShowEditModal(false)
+              }}
+            >
               {t('cancel')}
             </Button>
           </Box>
@@ -1791,7 +1770,7 @@ const BranchesPage = () => {
                 handelDelete()
               }}
             >
-              {t('delete')}
+              {t('Delete')}
             </Button>
             <Button
               color='secondary'
@@ -1801,6 +1780,60 @@ const BranchesPage = () => {
               }}
             >
               Cancel
+            </Button>
+          </Box>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        fullWidth
+        maxWidth='md'
+        scroll='body'
+        onClose={() => {
+          setChangeStatusModal(false)
+        }}
+        open={changeStatusModal}
+      >
+        <DialogTitle
+          component='div'
+          sx={{
+            textAlign: 'center',
+            px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`],
+            pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
+          }}
+        >
+          <Typography variant='h3'>{`${t('change_status')}`}</Typography>
+        </DialogTitle>
+        <DialogContent
+          sx={{
+            pb: theme => `${theme.spacing(5)} !important`,
+            px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`]
+          }}
+        >
+          <Box sx={{ my: 4 }}>
+            <h5>{rowData?.hidden == 0 ? t('do_you_hid') : t('do_you_show')}</h5>
+          </Box>
+        </DialogContent>
+        <DialogActions
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`],
+            pb: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
+          }}
+        >
+          <Box className='demo-space-x'>
+            <Button disabled={addLoading} type='submit' variant='contained' onClick={handleShow_hide}>
+              {t('yes')}
+            </Button>
+            <Button
+              color='secondary'
+              variant='tonal'
+              onClick={() => {
+                setChangeStatusModal(false)
+              }}
+            >
+              {t('cancel')}
             </Button>
           </Box>
         </DialogActions>

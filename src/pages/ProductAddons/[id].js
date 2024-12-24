@@ -59,10 +59,11 @@ const ProductAddons = () => {
     name_ar: '',
     name_en: ''
   })
+  const [showEditModal, setShowEditModal] = useState(false)
   const [allAtts, setAllAtts] = useState([])
 
   // const navigate = useNavigate()
-  const [showEditModal, setShowEditModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [editImg, setEditImg] = useState('')
   const [open, setOpen] = useState(false)
   const [dialogTitle, setDialogTitle] = useState('Add')
@@ -213,7 +214,32 @@ const ProductAddons = () => {
       flex: 0.1,
       field: 'delete',
       minWidth: 220,
-      headerName: `${t('delete')}`,
+      headerName: `${t('Delete')}`,
+      renderCell: ({ row }) => {
+        const { id } = row
+
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <div
+                onClick={() => {
+                  setShowDeleteModal(true)
+                  setRowData(row)
+                }}
+                className=''
+              >
+                <Button variant='contained'>{`${t('Delete')}`}</Button>
+              </div>
+            </Box>
+          </Box>
+        )
+      }
+    },
+    {
+      flex: 0.1,
+      field: 'edit',
+      minWidth: 220,
+      headerName: `${t('edit')}`,
       renderCell: ({ row }) => {
         const { id } = row
 
@@ -224,10 +250,11 @@ const ProductAddons = () => {
                 onClick={() => {
                   setShowEditModal(true)
                   setRowData(row)
+                  setEditImgUrl(row?.image)
                 }}
                 className=''
               >
-                <Button variant='contained'>{`${t('delete')}`}</Button>
+                <Button variant='contained'>{`${t('edit')}`}</Button>
               </div>
             </Box>
           </Box>
@@ -292,7 +319,7 @@ const ProductAddons = () => {
 
   useEffect(() => {
     getCategories()
-  }, [])
+  }, [query?.id])
 
   const handleAddFile = async () => {
     setAddLoading(true)
@@ -328,30 +355,6 @@ const ProductAddons = () => {
     }
   }
 
-  const handleShow_hide = async () => {
-    setChangeStatusLoading(true)
-    const token = localStorage.getItem('tradeVenddor')
-    await axios
-      .get(`${BASE_URL}categories/update_status/${rowData?.id}token=${token}`)
-      .then(res => {
-        console.log(res.data)
-        if (res?.data && res?.data?.status == 'success') {
-          toast.success(`تم ${rowData.is_active == '1' ? 'إلغاء تنشيط' : 'تنشيط'} الفئة بنجاح`)
-          getCategories()
-        } else if (res.data.status == 'error') {
-          toast.error(res.data.message)
-        } else {
-          toast.error('حدث خطأ ما')
-        }
-      })
-      .catch(e => console.log(e))
-      .finally(() => {
-        setChangeStatusModal(false)
-        setChangeStatusLoading(false)
-        setRowData({})
-      })
-  }
-
   const handleClose = () => {
     setOpen(false)
     setSelectedCheckbox([])
@@ -366,7 +369,7 @@ const ProductAddons = () => {
         if (res.data.status == 'success') {
           toast.success(res.data.message)
           getCategories()
-          setShowEditModal(false)
+          setShowDeleteModal(false)
         } else if (res.data.status == 'faild') {
           toast.error(res.data.message)
         } else {
@@ -389,11 +392,15 @@ const ProductAddons = () => {
         console.log(searchValue)
 
         const newData = originalData.filter(cat => {
-          if (searchValue.length >= 1 && !cat.name_ar.includes(searchValue) && !cat.name_en.includes(searchValue)) {
-            return false
+          if (
+            searchValue.length > 0 &&
+            (cat.name_ar.toLowerCase().includes(searchValue.toLowerCase()) ||
+              cat.name_en.toLowerCase().includes(searchValue.toLowerCase()))
+          ) {
+            return true
           }
 
-          return true
+          return false
         })
         setCategoreis(newData)
       } else {
@@ -424,14 +431,14 @@ const ProductAddons = () => {
       }
 
       // إرسال الطلب النهائي إلى السيرفر
-      await axios.post(`${BASE_URL}products/update_product/${rowData?.id}`, { ...requestData })
+      await axios.post(`${BASE_URL}products/edit_product_addon/${rowData?.id}`, { ...requestData })
 
       // استدعاء الدالة بعد الإضافة
       getCategories()
       toast.success('Successfully added!')
     } catch (error) {
       console.error(error)
-      toast.error('Failed to add new item.')
+      toast.error('Failed to Edit item.')
     } finally {
       setShowEditModal(false)
       setEditImg(null)
@@ -465,6 +472,18 @@ const ProductAddons = () => {
     <>
       <div className='rowDiv flex-2-1 page_padding'>
         <div>
+          <div className='my-2 search_item'>
+            <div className='field_input'>
+              <CustomTextField
+                onChange={e => {
+                  setSearchValue(e.target.value)
+                }}
+                fullWidth
+                label={`${t('search_here')}`}
+                placeholder={t('search_here')}
+              />
+            </div>
+          </div>{' '}
           <div className='title_add d-flex align-items-center justify-content-between mb-2'>
             <h5>{`${t('addons')}`}</h5>
             <button
@@ -476,7 +495,6 @@ const ProductAddons = () => {
               {t('add')}
             </button>
           </div>
-
           {/* {dataLoading ? <Loader size='md' /> : <TableLayout headers={categoriesHeader} data={categories} />} */}
         </div>
       </div>
@@ -487,7 +505,7 @@ const ProductAddons = () => {
         rows={categories ? categories : []}
         rowHeight={62}
         columns={columns}
-        pageSizeOptions={[5, 10]}
+        pageSizeOptions={[5, 10, 20, 40]}
         disableRowSelectionOnClick
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
@@ -535,7 +553,15 @@ const ProductAddons = () => {
         </DialogActions>
       </Dialog>
 
-      <Dialog fullWidth maxWidth='md' scroll='body' onClose={handleClose} open={showAddCatModal}>
+      <Dialog
+        fullWidth
+        maxWidth='md'
+        scroll='body'
+        onClose={() => {
+          setShowAddCatModal(false)
+        }}
+        open={showAddCatModal}
+      >
         <DialogTitle
           component='div'
           sx={{
@@ -544,7 +570,7 @@ const ProductAddons = () => {
             pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
           }}
         >
-          <Typography variant='h3'>{`Add New Product addon`}</Typography>
+          <Typography variant='h3'>{t('add_product_addon')}</Typography>
         </DialogTitle>
         <DialogContent
           sx={{
@@ -633,7 +659,13 @@ const ProductAddons = () => {
             <Button disabled={addLoading} type='submit' variant='contained' onClick={handleAddFile}>
               {t('add')}
             </Button>
-            <Button color='secondary' variant='tonal' onClick={handleClose}>
+            <Button
+              color='secondary'
+              variant='tonal'
+              onClick={() => {
+                setShowAddCatModal(false)
+              }}
+            >
               {t('cancel')}
             </Button>
           </Box>
@@ -657,7 +689,130 @@ const ProductAddons = () => {
             pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
           }}
         >
-          <Typography variant='h3'>{`Delete`}</Typography>
+          <Typography variant='h3'>{t('edit_product_addon')}</Typography>
+        </DialogTitle>
+        <DialogContent
+          sx={{
+            pb: theme => `${theme.spacing(5)} !important`,
+            px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`]
+          }}
+        >
+          <Box sx={{ my: 4 }}>
+            <FormControl fullWidth>
+              <CustomTextField
+                onChange={e => {
+                  setRowData({ ...rowData, name_ar: e.target.value })
+                }}
+                value={rowData?.name_ar}
+                fullWidth
+                label={`${t('name_ar')}`}
+                placeholder={t('name_ar')}
+              />
+            </FormControl>
+          </Box>
+          <Box sx={{ my: 4 }}>
+            <FormControl fullWidth>
+              <CustomTextField
+                onChange={e => {
+                  setRowData({ ...rowData, name_en: e.target.value })
+                }}
+                value={rowData?.name_en}
+                fullWidth
+                label={`${t('name_en')}`}
+                placeholder={t('name_en')}
+              />
+            </FormControl>
+          </Box>
+          <Box sx={{ my: 4 }}>
+            <FormControl fullWidth>
+              <CustomTextField
+                onChange={e => {
+                  setRowData({ ...rowData, in_stock: e.target.value })
+                }}
+                value={rowData?.in_stock}
+                fullWidth
+                label={`${t('in_stock')}`}
+                placeholder={t('in_stock')}
+              />
+            </FormControl>
+          </Box>
+          <Box sx={{ my: 4 }}>
+            <FormControl fullWidth>
+              <CustomTextField
+                onChange={e => {
+                  setRowData({ ...rowData, price: e.target.value })
+                }}
+                value={rowData?.price}
+                fullWidth
+                label={`${t('price')}`}
+                placeholder={t('price')}
+              />
+            </FormControl>
+          </Box>
+
+          <Box sx={{ my: 4 }}>
+            <div className='field_input'>
+              <label htmlFor=''>{t('img')}</label>
+              <input
+                type='file'
+                onChange={e => {
+                  setEditImg(e.target.files[0])
+                  setEditImgUrl(URL.createObjectURL(e.target.files[0]))
+                }}
+              />
+            </div>
+            <div>
+              {editImgUrl != '' && (
+                <div className='my-2'>
+                  <img style={{ width: '100px' }} src={editImgUrl} alt='' />
+                </div>
+              )}
+            </div>
+          </Box>
+        </DialogContent>
+        <DialogActions
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`],
+            pb: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
+          }}
+        >
+          <Box className='demo-space-x'>
+            <Button disabled={addLoading} type='submit' variant='contained' onClick={handleEdit}>
+              {t('edit')}
+            </Button>
+            <Button
+              color='secondary'
+              variant='tonal'
+              onClick={() => {
+                setShowEditModal(false)
+              }}
+            >
+              {t('cancel')}
+            </Button>
+          </Box>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        fullWidth
+        maxWidth='md'
+        scroll='body'
+        onClose={() => {
+          setShowDeleteModal(false)
+        }}
+        open={showDeleteModal}
+      >
+        <DialogTitle
+          component='div'
+          sx={{
+            textAlign: 'center',
+            px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`],
+            pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
+          }}
+        >
+          <Typography variant='h3'>{t(`Delete`)}</Typography>
         </DialogTitle>
         <DialogContent
           sx={{
@@ -677,13 +832,13 @@ const ProductAddons = () => {
         >
           <Box className='demo-space-x'>
             <Button disabled={addLoading} type='submit' variant='contained' onClick={handleDel}>
-              {t('delete')}
+              {t('Delete')}
             </Button>
             <Button
               color='secondary'
               variant='tonal'
               onClick={() => {
-                setShowEditModal(false)
+                setShowDeleteModal(false)
               }}
             >
               {t('cancel')}

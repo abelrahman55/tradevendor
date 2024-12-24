@@ -400,7 +400,7 @@ const ProductImages = () => {
         rows={categories ? categories : []}
         rowHeight={62}
         columns={columns}
-        pageSizeOptions={[5, 10]}
+        pageSizeOptions={[5, 10, 20, 40]}
         disableRowSelectionOnClick
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
@@ -446,17 +446,37 @@ const ProductImages = () => {
           }}
         >
           <Box className='demo-space-x'>
-            <Button type='submit' variant='contained' onClick={handleClose}>
+            <Button
+              type='submit'
+              variant='contained'
+              onClick={() => {
+                setShowAddCatModal(false)
+              }}
+            >
               Submit
             </Button>
-            <Button color='secondary' variant='tonal' onClick={handleClose}>
+            <Button
+              color='secondary'
+              variant='tonal'
+              onClick={() => {
+                setShowAddCatModal(false)
+              }}
+            >
               Cancel
             </Button>
           </Box>
         </DialogActions>
       </Dialog>
 
-      <Dialog fullWidth maxWidth='md' scroll='body' onClose={handleClose} open={showAddCatModal}>
+      <Dialog
+        fullWidth
+        maxWidth='md'
+        scroll='body'
+        onClose={() => {
+          setShowAddCatModal(false)
+        }}
+        open={showAddCatModal}
+      >
         <DialogTitle
           component='div'
           sx={{

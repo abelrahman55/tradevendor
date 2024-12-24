@@ -60,23 +60,15 @@ const ProductSizes = () => {
   const [allAtts, setAllAtts] = useState([])
 
   // const navigate = useNavigate()
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [editImg, setEditImg] = useState('')
   const [open, setOpen] = useState(false)
-  const [dialogTitle, setDialogTitle] = useState('Add')
-  const [selectedCheckbox, setSelectedCheckbox] = useState([])
-  const [isIndeterminateCheckbox, setIsIndeterminateCheckbox] = useState(false)
   const [categories, setCategoreis] = useState(null)
   const [originalData, setOriginalData] = useState(null)
   const [showAddCatModal, setShowAddCatModal] = useState(false)
   const [changeStatusModal, setChangeStatusModal] = useState(false)
   const [rowData, setRowData] = useState({})
-  const [updateModal, setUpdateModal] = useState(false)
-  const [imgUrl, setImgUrl] = useState('')
-  const [productData, setProductData] = useState({})
-  const [product_id, set_product_id] = useState({})
-  const [currentNumber, setCurrentNumber] = useState(null)
-  const [loader, setLoader] = useState(false)
 
   const [searchValue, setSearchValue] = useState('')
   const [dataLoading, setDataLoading] = useState(false)
@@ -92,38 +84,7 @@ const ProductSizes = () => {
   })
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 5 })
 
-  const [imgEn, setImgEn] = useState(null)
-  const [imgAr, setImgAr] = useState(null)
-
-  const [imgUrlEn, setImgUrlEn] = useState('')
-  const [imgUrlAr, setImgUrlAr] = useState('')
-
-  const [editImgEn, setEditImgEn] = useState(null)
-  const [editImgAr, setEditImgAr] = useState(null)
-
-  const [editImgUrl, setEditImgUrl] = useState('')
-  const [editImgUrlAr, setEditImgUrlAr] = useState('')
-
-  const [img, setImg] = useState('')
-  const [selectedFile, setSelectedFile] = useState(null)
-
   const [branches, setBranches] = useState([])
-
-  const renderName = row => {
-    if (row.avatar) {
-      return <CustomAvatar src={row.avatar} sx={{ mr: 2.5, width: 38, height: 38 }} />
-    } else {
-      return (
-        <CustomAvatar
-          skin='light'
-          color={row.avatarColor || 'primary'}
-          sx={{ mr: 2.5, width: 38, height: 38, fontSize: theme => theme.typography.body1.fontSize }}
-        >
-          {getInitials(row.name_ar || 'John Doe')}
-        </CustomAvatar>
-      )
-    }
-  }
 
   const columns = [
     {
@@ -189,7 +150,33 @@ const ProductSizes = () => {
       flex: 0.1,
       field: 'delete',
       minWidth: 220,
-      headerName: `${t('delete')}`,
+      headerName: `${t('Delete')}`,
+      renderCell: ({ row }) => {
+        const { id } = row
+
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <div
+                onClick={() => {
+                  setShowDeleteModal(true)
+                  setRowData(row)
+                }}
+                className=''
+              >
+                <Button variant='contained'>{`${t('Delete')}`}</Button>
+              </div>
+            </Box>
+          </Box>
+        )
+      }
+    },
+
+    {
+      flex: 0.1,
+      field: 'edit',
+      minWidth: 220,
+      headerName: `${t('edit')}`,
       renderCell: ({ row }) => {
         const { id } = row
 
@@ -203,7 +190,7 @@ const ProductSizes = () => {
                 }}
                 className=''
               >
-                <Button variant='contained'>{`${t('delete')}`}</Button>
+                <Button variant='contained'>{`${t('edit')}`}</Button>
               </div>
             </Box>
           </Box>
@@ -290,9 +277,12 @@ const ProductSizes = () => {
   }
 
   useEffect(() => {
-    getCategories()
     storeBranches()
   }, [])
+
+  useEffect(() => {
+    getCategories()
+  }, [query?.id])
 
   const handleAddFile = async () => {
     setAddLoading(true)
@@ -321,34 +311,8 @@ const ProductSizes = () => {
     }
   }
 
-  const handleShow_hide = async () => {
-    setChangeStatusLoading(true)
-    const token = localStorage.getItem('tradeVenddor')
-    await axios
-      .get(`${BASE_URL}categories/update_status/${rowData?.id}token=${token}`)
-      .then(res => {
-        console.log(res.data)
-        if (res?.data && res?.data?.status == 'success') {
-          toast.success(`تم ${rowData.is_active == '1' ? 'إلغاء تنشيط' : 'تنشيط'} الفئة بنجاح`)
-          getCategories()
-        } else if (res.data.status == 'error') {
-          toast.error(res.data.message)
-        } else {
-          toast.error('حدث خطأ ما')
-        }
-      })
-      .catch(e => console.log(e))
-      .finally(() => {
-        setChangeStatusModal(false)
-        setChangeStatusLoading(false)
-        setRowData({})
-      })
-  }
-
   const handleClose = () => {
     setOpen(false)
-    setSelectedCheckbox([])
-    setIsIndeterminateCheckbox(false)
   }
 
   const handleDel = id => {
@@ -359,7 +323,7 @@ const ProductSizes = () => {
         if (res.data.status == 'success') {
           toast.success(res.data.message)
           getCategories()
-          setShowEditModal(false)
+          setShowDeleteModal(false)
         } else if (res.data.status == 'faild') {
           toast.error(res.data.message)
         } else {
@@ -372,6 +336,29 @@ const ProductSizes = () => {
       .finally(() => {
         setAddLoading(false)
       })
+  }
+
+  const handleEdit = async () => {
+    setAddLoading(true)
+    try {
+      const requestData = {
+        ...rowData
+      }
+
+      // إرسال الطلب النهائي إلى السيرفر
+      await axios.post(`${BASE_URL}products/update_product_size/${rowData?.id}`, { ...requestData })
+
+      // استدعاء الدالة بعد الإضافة
+      getCategories()
+      toast.success('Successfully added!')
+      setShowEditModal(false)
+    } catch (error) {
+      console.error(error)
+      toast.error('Failed to add new item.')
+    } finally {
+      setShowEditModal(false)
+      setAddLoading(false)
+    }
   }
 
   // filteraiton part
@@ -394,44 +381,6 @@ const ProductSizes = () => {
       }
     }
   }, [searchValue])
-
-  const handleEdit = async () => {
-    setAddLoading(true)
-    try {
-      // رفع الصورة الواحدة
-      const formDataImage = new FormData()
-      let image = ''
-      formDataImage.append('image', editImg) // تأكد أن `imageFile` هو ملف الصورة الواحد
-      if (editImg) {
-        const imageResponse = await axios.post(`${BASE_URL}img_upload`, formDataImage)
-
-        image = imageResponse.data // الحصول على رابط أو مسار الصورة
-      }
-
-      // تجهيز بيانات الطلب النهائي بعد رفع الصورة والصوت
-      const requestData = {
-        ...rowData,
-        meta: rowData?.meta,
-        image: editImg ? image?.data.image : rowData?.image,
-        store_id: storeData?.store_id ?? storeData?.id
-      }
-
-      // إرسال الطلب النهائي إلى السيرفر
-      await axios.post(`${BASE_URL}products/update_product/${rowData?.id}`, { ...requestData })
-
-      // استدعاء الدالة بعد الإضافة
-      getCategories()
-      toast.success('Successfully added!')
-    } catch (error) {
-      console.error(error)
-      toast.error('Failed to add new item.')
-    } finally {
-      setShowEditModal(false)
-      setEditImg(null)
-      setEditImgUrl('')
-      setAddLoading(false)
-    }
-  }
 
   const getAllSizes = () => {
     axios
@@ -480,13 +429,21 @@ const ProductSizes = () => {
         rows={categories ? categories : []}
         rowHeight={62}
         columns={columns}
-        pageSizeOptions={[5, 10]}
+        pageSizeOptions={[5, 10, 20, 40]}
         disableRowSelectionOnClick
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
       />
 
-      <Dialog fullWidth maxWidth='md' scroll='body' onClose={handleClose} open={open}>
+      <Dialog
+        fullWidth
+        maxWidth='md'
+        scroll='body'
+        onClose={() => {
+          setOpen(false)
+        }}
+        open={open}
+      >
         <DialogTitle
           component='div'
           sx={{
@@ -518,17 +475,37 @@ const ProductSizes = () => {
           }}
         >
           <Box className='demo-space-x'>
-            <Button type='submit' variant='contained' onClick={handleClose}>
+            <Button
+              type='submit'
+              variant='contained'
+              onClick={() => {
+                setShowAddCatModal(false)
+              }}
+            >
               Submit
             </Button>
-            <Button color='secondary' variant='tonal' onClick={handleClose}>
+            <Button
+              color='secondary'
+              variant='tonal'
+              onClick={() => {
+                setShowAddCatModal(false)
+              }}
+            >
               Cancel
             </Button>
           </Box>
         </DialogActions>
       </Dialog>
 
-      <Dialog fullWidth maxWidth='md' scroll='body' onClose={handleClose} open={showAddCatModal}>
+      <Dialog
+        fullWidth
+        maxWidth='md'
+        scroll='body'
+        onClose={() => {
+          setShowAddCatModal(false)
+        }}
+        open={showAddCatModal}
+      >
         <DialogTitle
           component='div'
           sx={{
@@ -537,7 +514,7 @@ const ProductSizes = () => {
             pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
           }}
         >
-          <Typography variant='h3'>{`Add New Product Size`}</Typography>
+          <Typography variant='h3'>{t(`Add_New_Product_Size`)}</Typography>
         </DialogTitle>
         <DialogContent
           sx={{
@@ -609,7 +586,13 @@ const ProductSizes = () => {
             <Button disabled={addLoading} type='submit' variant='contained' onClick={handleAddFile}>
               {t('add')}
             </Button>
-            <Button color='secondary' variant='tonal' onClick={handleClose}>
+            <Button
+              color='secondary'
+              variant='tonal'
+              onClick={() => {
+                setShowAddCatModal(false)
+              }}
+            >
               {t('cancel')}
             </Button>
           </Box>
@@ -633,7 +616,113 @@ const ProductSizes = () => {
             pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
           }}
         >
-          <Typography variant='h3'>{`Delete`}</Typography>
+          <Typography variant='h3'>{t(`edit_Product_Size`)}</Typography>
+        </DialogTitle>
+        <DialogContent
+          sx={{
+            pb: theme => `${theme.spacing(5)} !important`,
+            px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`]
+          }}
+        >
+          <Box sx={{ my: 4 }}>
+            <FormControl fullWidth>
+              <CustomTextField
+                onChange={e => {
+                  setRowData({ ...rowData, in_stock: e.target.value })
+                }}
+                value={rowData?.in_stock}
+                fullWidth
+                label={`${t('in_stock')}`}
+                placeholder={t('in_stock')}
+              />
+            </FormControl>
+          </Box>
+          <Box sx={{ my: 4 }}>
+            <FormControl fullWidth>
+              <CustomTextField
+                onChange={e => {
+                  setRowData({ ...rowData, extra_price: e.target.value })
+                }}
+                value={rowData?.extra_price}
+                fullWidth
+                label={`${t('extra_price')}`}
+                placeholder={t('extra_price')}
+              />
+            </FormControl>
+          </Box>
+
+          <Box sx={{ my: 4 }}>
+            <FormControl style={{ width: '100%' }}>
+              <InputLabel htmlFor='outlined-age-native-simple'>{t('sizes')}</InputLabel>
+              <Select
+                native
+                label='Age'
+                defaultValue=''
+                inputProps={{
+                  name: 'age',
+                  id: 'outlined-age-native-simple'
+                }}
+                onChange={e => {
+                  // console.log(e.target.value)
+                  setRowData({ ...rowData, size: e.target.value })
+                }}
+              >
+                <option disabled={true}></option>
+                {allAtts &&
+                  allAtts?.map(it => {
+                    return (
+                      <option key={it.id} value={it.id}>
+                        {it.size}
+                      </option>
+                    )
+                  })}
+              </Select>
+            </FormControl>
+          </Box>
+        </DialogContent>
+        <DialogActions
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`],
+            pb: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
+          }}
+        >
+          <Box className='demo-space-x'>
+            <Button disabled={addLoading} type='submit' variant='contained' onClick={handleEdit}>
+              {t('edit')}
+            </Button>
+            <Button
+              color='secondary'
+              variant='tonal'
+              onClick={() => {
+                setShowEditModal(false)
+              }}
+            >
+              {t('cancel')}
+            </Button>
+          </Box>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        fullWidth
+        maxWidth='md'
+        scroll='body'
+        onClose={() => {
+          setShowDeleteModal(false)
+        }}
+        open={showDeleteModal}
+      >
+        <DialogTitle
+          component='div'
+          sx={{
+            textAlign: 'center',
+            px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`],
+            pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
+          }}
+        >
+          <Typography variant='h3'>{t(`Delete`)}</Typography>
         </DialogTitle>
         <DialogContent
           sx={{
@@ -653,13 +742,13 @@ const ProductSizes = () => {
         >
           <Box className='demo-space-x'>
             <Button disabled={addLoading} type='submit' variant='contained' onClick={handleDel}>
-              {t('delete')}
+              {t('Delete')}
             </Button>
             <Button
               color='secondary'
               variant='tonal'
               onClick={() => {
-                setShowEditModal(false)
+                setShowDeleteModal(false)
               }}
             >
               {t('cancel')}

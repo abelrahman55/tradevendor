@@ -54,11 +54,12 @@ import Link from 'next/link'
 // })
 
 const BranchesPage = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   console.log(t)
   let localData = localStorage.getItem('tradeVenddor')
   let storeData = localData && JSON.parse(localData)
-  console.log(storeData)
+
+  const [mainStatus, setMainStatus] = useState(0)
 
   const [newBranch, setNewBranch] = useState({
     name_ar: '',
@@ -70,11 +71,14 @@ const BranchesPage = () => {
     lng: '',
     covered_zone: 4
   })
+  const [editCoverImg, setEditCoverImg] = useState()
+  const [editCoverImgUrl, setEditCoverImgUrl] = useState()
   const [allCategories, setAllCategories] = useState([])
   const [showEditModal, setShowEditModal] = useState(false)
   const [imgEdit, setImgEdit] = useState(null)
   const [imgEditUrl, setImgEditUrl] = useState('')
-
+  const [coverImg, setCoverImg] = useState(null)
+  const [coverImgUrl, setCoverImgUrl] = useState('')
   const [selectedCategories, setSelectedCategories] = useState([])
 
   // const navigate = useNavigate()
@@ -173,6 +177,31 @@ const BranchesPage = () => {
   const columns = [
     {
       flex: 0.1,
+      field: 'main',
+      minWidth: 220,
+      headerName: `${t('main')}`,
+      renderCell: ({ row }) => {
+        const { image, image_en } = row
+
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <div>
+                {row?.main_status == 1
+                  ? i18n.language == 'ar'
+                    ? 'الرئيسى'
+                    : 'Main'
+                  : i18n.language == 'ar'
+                  ? 'ليس الرئيسى'
+                  : 'Not Main'}
+              </div>
+            </Box>
+          </Box>
+        )
+      }
+    },
+    {
+      flex: 0.1,
       field: 'image',
       minWidth: 220,
       headerName: `${t('img')}`,
@@ -183,6 +212,23 @@ const BranchesPage = () => {
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
               <img style={{ width: '60px' }} src={image} alt='' />
+            </Box>
+          </Box>
+        )
+      }
+    },
+    {
+      flex: 0.1,
+      field: 'cover_img',
+      minWidth: 220,
+      headerName: `${t('cover_img')}`,
+      renderCell: ({ row }) => {
+        const { image, cover_img } = row
+
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <img style={{ width: '60px' }} src={cover_img} alt='' />
             </Box>
           </Box>
         )
@@ -397,6 +443,7 @@ const BranchesPage = () => {
                   setShowEditModal(true)
                   setRowData(row)
                   setImgEditUrl(row.image)
+                  setEditCoverImgUrl(row.cover_img)
                 }}
                 variant='contained'
               >{`${t('edit')}`}</Button>
@@ -521,7 +568,8 @@ const BranchesPage = () => {
     const dataset = {
       ...newCat,
       image_ar: imageLink,
-      image_en: imageLink2
+      image_en: imageLink2,
+      main_status: mainStatus
     }
 
     await axios
@@ -554,8 +602,15 @@ const BranchesPage = () => {
       })
   }
 
-  const handelEditBran = () => {
+  const handelEditBran = async () => {
     setAddLoading(true)
+    let cover_img = rowData?.cover_img
+    if (editCoverImg) {
+      const formData2 = new FormData()
+      formData2.append('image', editCoverImg)
+      const response = await axios.post(`${BASE_URL}img_upload`, formData2)
+      cover_img = response.data.data.image
+    }
     if (imgEdit != null) {
       const formData = new FormData()
       formData.append('image', imgEdit)
@@ -565,7 +620,8 @@ const BranchesPage = () => {
             ...rowData,
             user_id: storeData?.user_id,
             store_id: storeData?.store_id ?? storeData?.id,
-            image: res2.data?.data?.image
+            image: res2.data?.data?.image,
+            cover_img
           }
           axios
             .post(BASE_URL + `branches/update_one/${rowData?.id}`, data_send)
@@ -594,6 +650,7 @@ const BranchesPage = () => {
       const data_send = {
         ...rowData,
         user_id: storeData?.user_id,
+        cover_img,
         store_id: storeData?.store_id ?? storeData?.id
       }
       axios
@@ -616,12 +673,17 @@ const BranchesPage = () => {
     }
   }
 
-  const handleAddFile = () => {
+  const handleAddFile = async () => {
     setAddLoading(true)
+    const formData2 = new FormData()
+    formData2.append('image', coverImg)
+    const response = await axios.post(`${BASE_URL}img_upload`, formData2)
+    let img_cover = ''
+    img_cover = response.data.data.image
     if (img != null) {
       const formData = new FormData()
       formData.append('image', img)
-      axios
+      await axios
         .post(BASE_URL + `img_upload`, formData)
         .then(res2 => {
           if (res2.data.status == 'success') {
@@ -630,8 +692,10 @@ const BranchesPage = () => {
               location: null, //'location'
               user_id: storeData?.user_id,
               store_id: storeData?.store_id ?? storeData?.id,
-              latitude: newBranch.lat,
-              longitude: newBranch.lng,
+              latitude: newBranch.lat ?? 0,
+              longitude: newBranch.lng ?? 0,
+              cover_img: img_cover,
+              main_status: mainStatus,
               image: res2.data?.data?.image
             }
             console.log(data_send)
@@ -666,11 +730,13 @@ const BranchesPage = () => {
         location: null, //'location'
         user_id: storeData?.user_id,
         store_id: storeData?.store_id ?? storeData?.id,
-        latitude: newBranch.lat,
-        longitude: newBranch.lng
+        latitude: newBranch.lat ?? 0,
+        longitude: newBranch.lng ?? 0,
+        cover_img: img_cover,
+        main_status: mainStatus
       }
       console.log(data_send)
-      axios
+      await axios
         .post(BASE_URL + 'branches/add_new', data_send)
         .then(res => {
           // console.log(res)
@@ -689,184 +755,6 @@ const BranchesPage = () => {
           setAddLoading(false)
         })
     }
-  }
-
-  const updateCategoryData = async () => {
-    setUpdateLoading(true)
-    const token = localStorage.getItem('tradeVenddor')
-    if (editImgAr != null) {
-      if (editImgEn != null) {
-        const form1 = new FormData()
-        form1.append('image', editImgAr)
-        axios
-          .post(`${BASE_URL}img_upload`, form1)
-          .then(res1 => {
-            if (res1.data.status == 'success') {
-              const form2 = new FormData()
-              form2.append('image', editImgEn)
-              axios.post(`${BASE_URL}img_upload`, form2).then(res2 => {
-                if (res2.data.status == 'success') {
-                  const data_send = {
-                    ...rowData,
-                    image_ar: res1.data?.data?.image,
-                    image_en: res2.data?.data?.image
-                  }
-
-                  axios
-                    .post(`${BASE_URL}branches/update_one/${rowData.id}?token=${token}`, data_send)
-                    .then(res => {
-                      if (res?.data && res?.data?.status == 'success') {
-                        toast.success('تم تعديل الفئة بنجاح')
-                        getCategories()
-                        console.log(res.data.result)
-                      } else if (res.data.status == 'error') {
-                        toast.error('هناك مشكلة ! حاول مجدداً')
-                      } else {
-                        toast.error('حدث خطأ ما')
-                      }
-                    })
-                    .catch(e => console.log(e))
-                    .finally(() => {
-                      setUpdateModal(false)
-                      setRowData({})
-                      setUpdateLoading(false)
-                      setImg('')
-                      setImgUrl('')
-                      setSelectedFile(null)
-                    })
-                }
-              })
-            }
-          })
-          .catch(e => console.log(e))
-      } else {
-        const form1 = new FormData()
-        form1.append('image', editImgAr)
-        axios
-          .post(`${BASE_URL}img_upload`, form1)
-          .then(res1 => {
-            if (res1.data.status == 'success') {
-              const data_send = {
-                ...rowData,
-                image_ar: res1.data?.data?.image
-              }
-              axios
-                .post(`${BASE_URL}branches/update_one/${rowData.id}?token=${token}`, data_send)
-                .then(res => {
-                  if (res?.data && res?.data?.status == 'success') {
-                    toast.success('تم تعديل الفئة بنجاح')
-                    getCategories()
-                    console.log(res.data.result)
-                  } else if (res.data.status == 'error') {
-                    toast.error('هناك مشكلة ! حاول مجدداً')
-                  } else {
-                    toast.error('حدث خطأ ما')
-                  }
-                })
-                .catch(e => console.log(e))
-                .finally(() => {
-                  setUpdateModal(false)
-                  setRowData({})
-                  setUpdateLoading(false)
-                  setImg('')
-                  setImgUrl('')
-                  setSelectedFile(null)
-                })
-            }
-          })
-          .catch(e => console.log(e))
-      }
-    } else {
-      if (editImgEn != null) {
-        const form2 = new FormData()
-        form2.append('image', editImgEn)
-        axios.post(`${BASE_URL}img_upload`, form2).then(res2 => {
-          if (res2.data.status == 'success') {
-            const data_send = {
-              ...rowData,
-              image_en: res2.data?.data?.image
-            }
-            axios
-              .post(`${BASE_URL}branches/update_one/${rowData.id}?token=${token}`, data_send)
-              .then(res => {
-                if (res?.data && res?.data?.status == 'success') {
-                  toast.success('تم تعديل الفئة بنجاح')
-                  getCategories()
-                  console.log(res.data.result)
-                } else if (res.data.status == 'error') {
-                  toast.error('هناك مشكلة ! حاول مجدداً')
-                } else {
-                  toast.error('حدث خطأ ما')
-                }
-              })
-              .catch(e => console.log(e))
-              .finally(() => {
-                setUpdateModal(false)
-                setRowData({})
-                setUpdateLoading(false)
-                setImg('')
-                setImgUrl('')
-                setSelectedFile(null)
-              })
-          }
-        })
-      } else {
-        const data_send = {
-          ...rowData
-        }
-        axios
-          .post(`${BASE_URL}branches/update_one/${rowData.id}?token=${token}`, data_send)
-          .then(res => {
-            if (res?.data && res?.data?.status == 'success') {
-              toast.success('تم تعديل الفئة بنجاح')
-              getCategories()
-              console.log(res.data.result)
-            } else if (res.data.status == 'error') {
-              toast.error('هناك مشكلة ! حاول مجدداً')
-            } else {
-              toast.error('حدث خطأ ما')
-            }
-          })
-          .catch(e => console.log(e))
-          .finally(() => {
-            setUpdateModal(false)
-            setRowData({})
-            setUpdateLoading(false)
-            setImg('')
-            setImgUrl('')
-            setSelectedFile(null)
-          })
-      }
-    }
-
-    const dataset = {
-      ...rowData
-    }
-    console.log(dataset)
-  }
-
-  const handleShow_hide = async () => {
-    setChangeStatusLoading(true)
-    const token = localStorage.getItem('tradeVenddor')
-    await axios
-      .get(`${BASE_URL}branches/update_status/${rowData?.id}token=${token}`)
-      .then(res => {
-        console.log(res.data)
-        if (res?.data && res?.data?.status == 'success') {
-          toast.success(`تم ${rowData.is_active == '1' ? 'إلغاء تنشيط' : 'تنشيط'} الفئة بنجاح`)
-          getCategories()
-        } else if (res.data.status == 'error') {
-          toast.error(res.data.message)
-        } else {
-          toast.error('حدث خطأ ما')
-        }
-      })
-      .catch(e => console.log(e))
-      .finally(() => {
-        setChangeStatusModal(false)
-        setChangeStatusLoading(false)
-        setRowData({})
-      })
   }
 
   const getAllCategories = async () => {
@@ -898,17 +786,25 @@ const BranchesPage = () => {
 
   // filteraiton part
 
+  // const handleSearch=()=>{
+  //   setBranches(originalData.filter(it=>it.));
+  // }
+
   useEffect(() => {
     if (originalData && originalData.length >= 1) {
       if (searchValue.length > 0) {
         console.log(searchValue)
 
         const newData = originalData.filter(cat => {
-          if (searchValue.length >= 1 && !cat.name_ar.includes(searchValue) && !cat.name_en.includes(searchValue)) {
-            return false
+          if (
+            searchValue.length > 0 &&
+            (cat.name_ar.toLowerCase().includes(searchValue.toLowerCase()) ||
+              cat.name_en.toLowerCase().includes(searchValue.toLowerCase()))
+          ) {
+            return true
           }
 
-          return true
+          return false
         })
         setBranches(newData)
       } else {
@@ -924,6 +820,18 @@ const BranchesPage = () => {
     <>
       <div className='rowDiv flex-2-1 page_padding'>
         <div>
+          <div className='my-2 search_item'>
+            <div className='field_input'>
+              <CustomTextField
+                onChange={e => {
+                  setSearchValue(e.target.value)
+                }}
+                fullWidth
+                label={`${t('search_here')}`}
+                placeholder={t('search_here')}
+              />
+            </div>
+          </div>
           <div className='title_add d-flex align-items-center justify-content-between mb-2'>
             <h5>{`${t('branches')}`}</h5>
             {storeData?.store_id ? (
@@ -959,7 +867,7 @@ const BranchesPage = () => {
         rows={branches ? branches : []}
         rowHeight={62}
         columns={columns}
-        pageSizeOptions={[5, 10]}
+        pageSizeOptions={[5, 10, 20, 40]}
         disableRowSelectionOnClick
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
@@ -974,7 +882,7 @@ const BranchesPage = () => {
             pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
           }}
         >
-          <Typography variant='h3'>{`Add New Branch`}</Typography>
+          <Typography variant='h3'>{t('Add_New_Branch')}</Typography>
         </DialogTitle>
         <DialogContent
           sx={{
@@ -1072,6 +980,45 @@ const BranchesPage = () => {
                 </div>
               )}
             </div>
+          </Box>
+
+          <Box sx={{ my: 4 }}>
+            <FormControl style={{ width: '100%' }}>
+              <FormControl fullWidth>
+                <label htmlFor={`file2`}>{t('cover_img')}</label>
+                <input
+                  onChange={e => {
+                    setCoverImg(e.target.files[0])
+                    setCoverImgUrl(URL.createObjectURL(e.target.files[0]))
+                  }}
+                  type='file'
+                  id={`file2`}
+                />
+              </FormControl>
+            </FormControl>
+            <div>
+              {coverImgUrl != '' && (
+                <div className='my-2'>
+                  <img style={{ width: '100px' }} src={coverImgUrl} alt='' />
+                </div>
+              )}
+            </div>
+          </Box>
+
+          <Box sx={{ my: 4 }}>
+            <FormControl style={{ width: '100%' }}>
+              <FormControl fullWidth>
+                <label htmlFor={`file2`}>{t('main_bran')}</label>
+              </FormControl>
+              <div
+                onClick={() => {
+                  setMainStatus(mainStatus == 1 ? 0 : 1)
+                }}
+                className={mainStatus ? 'parent_stauts active' : 'parent_stauts'}
+              >
+                <div className='child_status'></div>
+              </div>
+            </FormControl>
           </Box>
           {/* <Box sx={{ my: 4 }}>
             <div style={{ width: '90%', margin: '10px auto' }}>
@@ -1234,6 +1181,25 @@ const BranchesPage = () => {
             </div>
           </Box>
           <Box sx={{ my: 4 }}>
+            <div className='field_input'>
+              <label htmlFor=''>{t('cover_img')}</label>
+              <input
+                type='file'
+                onChange={e => {
+                  setEditCoverImg(e.target.files[0])
+                  setEditCoverImgUrl(URL.createObjectURL(e.target.files[0]))
+                }}
+              />
+            </div>
+            <div>
+              {editCoverImgUrl != '' && (
+                <div className='my-2'>
+                  <img style={{ width: '100px' }} src={editCoverImgUrl} alt='' />
+                </div>
+              )}
+            </div>
+          </Box>
+          <Box sx={{ my: 4 }}>
             {/* <div style={{ width: '90%', margin: 'auto' }}>
               <label htmlFor=''>{t('location')}</label>
               <MapContainer
@@ -1266,7 +1232,7 @@ const BranchesPage = () => {
         >
           <Box className='demo-space-x'>
             <Button disabled={addLoading} type='submit' variant='contained' onClick={handelEditBran}>
-              {t('edit')}
+              {t('yes')}
             </Button>
             <Button color='secondary' variant='tonal' onClick={handleClose}>
               {t('cancel')}

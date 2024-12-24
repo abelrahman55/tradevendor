@@ -61,6 +61,7 @@ const ProductColor = () => {
   const [allAtts, setAllAtts] = useState([])
 
   // const navigate = useNavigate()
+  const [deleteModal, setDeleteModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [editImg, setEditImg] = useState('')
   const [open, setOpen] = useState(false)
@@ -198,12 +199,38 @@ const ProductColor = () => {
             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
               <div
                 onClick={() => {
-                  setShowEditModal(true)
+                  setDeleteModal(true)
                   setRowData(row)
                 }}
                 className=''
               >
                 <Button variant='contained'>{`${t('delete')}`}</Button>
+              </div>
+            </Box>
+          </Box>
+        )
+      }
+    },
+
+    {
+      flex: 0.1,
+      field: 'edit',
+      minWidth: 220,
+      headerName: `${t('edit')}`,
+      renderCell: ({ row }) => {
+        const { id } = row
+
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <div
+                onClick={() => {
+                  setShowEditModal(true)
+                  setRowData(row)
+                }}
+                className=''
+              >
+                <Button variant='contained'>{`${t('edit')}`}</Button>
               </div>
             </Box>
           </Box>
@@ -290,9 +317,11 @@ const ProductColor = () => {
   }
 
   useEffect(() => {
-    getCategories()
     storeBranches()
   }, [])
+  useEffect(() => {
+    getCategories()
+  }, [query?.id])
 
   const handleAddFile = async () => {
     setAddLoading(true)
@@ -359,7 +388,7 @@ const ProductColor = () => {
         if (res.data.status == 'success') {
           toast.success(res.data.message)
           getCategories()
-          setShowEditModal(false)
+          setDeleteModal(false)
         } else if (res.data.status == 'faild') {
           toast.error(res.data.message)
         } else {
@@ -398,35 +427,22 @@ const ProductColor = () => {
   const handleEdit = async () => {
     setAddLoading(true)
     try {
-      // رفع الصورة الواحدة
-      const formDataImage = new FormData()
-      let image = ''
-      formDataImage.append('image', editImg) // تأكد أن `imageFile` هو ملف الصورة الواحد
-      if (editImg) {
-        const imageResponse = await axios.post(`${BASE_URL}img_upload`, formDataImage)
-
-        image = imageResponse.data // الحصول على رابط أو مسار الصورة
-      }
-
-      // تجهيز بيانات الطلب النهائي بعد رفع الصورة والصوت
       const requestData = {
-        ...rowData,
-        meta: rowData?.meta,
-        image: editImg ? image?.data.image : rowData?.image,
-        store_id: storeData?.store_id ?? storeData?.id
+        ...rowData
       }
 
       // إرسال الطلب النهائي إلى السيرفر
-      await axios.post(`${BASE_URL}products/update_product/${rowData?.id}`, { ...requestData })
+      await axios.post(`${BASE_URL}products/update_product_color/${rowData?.id}`, { ...requestData })
 
       // استدعاء الدالة بعد الإضافة
       getCategories()
       toast.success('Successfully added!')
+      setsetShowEditModal(false)
     } catch (error) {
       console.error(error)
       toast.error('Failed to add new item.')
     } finally {
-      setShowEditModal(false)
+      setDeleteModal(false)
       setEditImg(null)
       setEditImgUrl('')
       setAddLoading(false)
@@ -480,7 +496,7 @@ const ProductColor = () => {
         rows={categories ? categories : []}
         rowHeight={62}
         columns={columns}
-        pageSizeOptions={[5, 10]}
+        pageSizeOptions={[5, 10, 20, 40]}
         disableRowSelectionOnClick
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
@@ -503,7 +519,7 @@ const ProductColor = () => {
             pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
           }}
         >
-          <Typography variant='h3'>{`Add New Color`}</Typography>
+          <Typography variant='h3'>{t(`Add_New_Color`)}</Typography>
         </DialogTitle>
         <DialogContent
           sx={{
@@ -526,17 +542,37 @@ const ProductColor = () => {
           }}
         >
           <Box className='demo-space-x'>
-            <Button type='submit' variant='contained' onClick={handleClose}>
+            <Button
+              type='submit'
+              variant='contained'
+              onClick={() => {
+                setShowAddCatModal(false)
+              }}
+            >
               Submit
             </Button>
-            <Button color='secondary' variant='tonal' onClick={handleClose}>
+            <Button
+              color='secondary'
+              variant='tonal'
+              onClick={() => {
+                setShowAddCatModal(false)
+              }}
+            >
               Cancel
             </Button>
           </Box>
         </DialogActions>
       </Dialog>
 
-      <Dialog fullWidth maxWidth='md' scroll='body' onClose={handleClose} open={showAddCatModal}>
+      <Dialog
+        fullWidth
+        maxWidth='md'
+        scroll='body'
+        onClose={() => {
+          setShowAddCatModal(false)
+        }}
+        open={showAddCatModal}
+      >
         <DialogTitle
           component='div'
           sx={{
@@ -545,7 +581,7 @@ const ProductColor = () => {
             pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
           }}
         >
-          <Typography variant='h3'>{`Add New Product Color`}</Typography>
+          <Typography variant='h3'>{t(`Add_New_Color`)}</Typography>
         </DialogTitle>
         <DialogContent
           sx={{
@@ -657,7 +693,100 @@ const ProductColor = () => {
             pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
           }}
         >
-          <Typography variant='h3'>{`Delete Color`}</Typography>
+          <Typography variant='h3'>{t(`edit_Product_Color`)}</Typography>
+        </DialogTitle>
+        <DialogContent
+          sx={{
+            pb: theme => `${theme.spacing(5)} !important`,
+            px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`]
+          }}
+        >
+          <Box sx={{ my: 4 }}>
+            <FormControl fullWidth>
+              <CustomTextField
+                onChange={e => {
+                  setRowData({ ...rowData, in_stock: e.target.value })
+                }}
+                fullWidth
+                value={rowData?.in_stock}
+                label={`${t('in_stock')}`}
+                placeholder={t('in_stock')}
+              />
+            </FormControl>
+          </Box>
+          <Box sx={{ my: 4 }}>
+            <FormControl fullWidth>
+              <CustomTextField
+                onChange={e => {
+                  setRowData({ ...rowData, extra_price: e.target.value })
+                }}
+                value={rowData?.extra_price}
+                fullWidth
+                label={`${t('extra_price')}`}
+                placeholder={t('extra_price')}
+              />
+            </FormControl>
+          </Box>
+
+          <Box sx={{ my: 4 }}>
+            <FormControl style={{ width: '100%' }}>
+              <CustomTextField
+                style={{ marginTop: '10px' }}
+                type='color'
+                onChange={e => {
+                  setRowData({ ...rowData, color_text: e.target.value })
+                }}
+                value={rowData?.color_text}
+                fullWidth
+                label={`${t('color')}`}
+                placeholder={t('color')}
+              />
+            </FormControl>
+          </Box>
+        </DialogContent>
+        <DialogActions
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`],
+            pb: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
+          }}
+        >
+          <Box className='demo-space-x'>
+            <Button disabled={addLoading} type='submit' variant='contained' onClick={handleEdit}>
+              {t('edit')}
+            </Button>
+            <Button
+              color='secondary'
+              variant='tonal'
+              onClick={() => {
+                setShowEditModal(false)
+              }}
+            >
+              {t('cancel')}
+            </Button>
+          </Box>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        fullWidth
+        maxWidth='md'
+        scroll='body'
+        onClose={() => {
+          setDeleteModal(false)
+        }}
+        open={deleteModal}
+      >
+        <DialogTitle
+          component='div'
+          sx={{
+            textAlign: 'center',
+            px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`],
+            pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
+          }}
+        >
+          <Typography variant='h3'>{t(`Delete`)}</Typography>
         </DialogTitle>
         <DialogContent
           sx={{
@@ -683,7 +812,7 @@ const ProductColor = () => {
               color='secondary'
               variant='tonal'
               onClick={() => {
-                setShowEditModal(false)
+                setDeleteModal(false)
               }}
             >
               {t('cancel')}

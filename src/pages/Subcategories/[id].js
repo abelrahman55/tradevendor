@@ -7,39 +7,18 @@ import Select from 'react-select'
 import { Menu, Preview, add, exitModal, eyeOff, eyeOn, search, edit } from 'src/constants/svgIcons'
 import { useTranslation } from 'react-i18next'
 
-import { Loader } from 'rsuite'
 import Box from '@mui/material/Box'
-import Grid from '@mui/material/Grid'
-import Card from '@mui/material/Card'
-import Table from '@mui/material/Table'
 import Button from '@mui/material/Button'
-import Avatar from '@mui/material/Avatar'
 import Dialog from '@mui/material/Dialog'
-import Tooltip from '@mui/material/Tooltip'
-import Checkbox from '@mui/material/Checkbox'
-import TableRow from '@mui/material/TableRow'
-import TableBody from '@mui/material/TableBody'
-import TableCell from '@mui/material/TableCell'
-import TableHead from '@mui/material/TableHead'
-import IconButton from '@mui/material/IconButton'
 import { DataGrid } from '@mui/x-data-grid'
-import { getInitials } from 'src/@core/utils/get-initials'
-import { hexToRGBA } from 'src/@core/utils/hex-to-rgba'
-
 import Typography from '@mui/material/Typography'
 import FormControl from '@mui/material/FormControl'
 import DialogTitle from '@mui/material/DialogTitle'
-import AvatarGroup from '@mui/material/AvatarGroup'
-import CardContent from '@mui/material/CardContent'
 import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
-import TableContainer from '@mui/material/TableContainer'
-import FormControlLabel from '@mui/material/FormControlLabel'
 import { Icon, InputLabel } from '@mui/material'
 import CustomTextField from 'src/@core/components/mui/text-field'
 import { BASE_URL } from 'src/constants'
-import OptionsMenu from 'src/@core/components/option-menu'
-import CustomAvatar from 'src/@core/components/mui/avatar'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 
@@ -48,9 +27,7 @@ const Subcategories = () => {
   const { t } = useTranslation()
   let localData = localStorage.getItem('tradeVenddor')
   let storeData = localData && JSON.parse(localData)
-  const [allCategories, setAllCategories] = useState([])
   const [showDeleteModel, setShowDeleteModel] = useState(false)
-  const [selectedCategories, setSelectedCategories] = useState([])
 
   const [newBranch, setNewBranch] = useState({
     title_en: '',
@@ -69,12 +46,7 @@ const Subcategories = () => {
   const [showAddCatModal, setShowAddCatModal] = useState(false)
   const [changeStatusModal, setChangeStatusModal] = useState(false)
   const [rowData, setRowData] = useState({})
-  const [updateModal, setUpdateModal] = useState(false)
   const [imgUrl, setImgUrl] = useState('')
-  const [productData, setProductData] = useState({})
-  const [product_id, set_product_id] = useState({})
-  const [currentNumber, setCurrentNumber] = useState(null)
-  const [loader, setLoader] = useState(false)
 
   const [searchValue, setSearchValue] = useState('')
   const [dataLoading, setDataLoading] = useState(false)
@@ -90,36 +62,10 @@ const Subcategories = () => {
   })
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 5 })
 
-  const [imgEn, setImgEn] = useState(null)
-  const [imgAr, setImgAr] = useState(null)
-
-  const [imgUrlEn, setImgUrlEn] = useState('')
-  const [imgUrlAr, setImgUrlAr] = useState('')
-
-  const [editImgEn, setEditImgEn] = useState(null)
-  const [editImgAr, setEditImgAr] = useState(null)
-
   const [editImgUrl, setEditImgUrl] = useState('')
-  const [editImgUrlAr, setEditImgUrlAr] = useState('')
 
   const [img, setImg] = useState('')
   const [selectedFile, setSelectedFile] = useState(null)
-
-  const renderName = row => {
-    if (row.avatar) {
-      return <CustomAvatar src={row.avatar} sx={{ mr: 2.5, width: 38, height: 38 }} />
-    } else {
-      return (
-        <CustomAvatar
-          skin='light'
-          color={row.avatarColor || 'primary'}
-          sx={{ mr: 2.5, width: 38, height: 38, fontSize: theme => theme.typography.body1.fontSize }}
-        >
-          {getInitials(row.name_ar || 'John Doe')}
-        </CustomAvatar>
-      )
-    }
-  }
 
   const columns = [
     {
@@ -250,36 +196,6 @@ const Subcategories = () => {
         )
       }
     }
-
-    // {
-    //   flex: 0.1,
-    //   minWidth: 100,
-    //   sortable: false,
-    //   field: 'actions',
-    //   headerName: 'Actions',
-    //   renderCell: () => (
-    //     <OptionsMenu
-    //       iconButtonProps={{ size: 'small', sx: { color: 'text.secondary' } }}
-    //       options={[
-    //         'Details',
-    //         'Archive',
-    //         { divider: true, dividerProps: { sx: { my: theme => `${theme.spacing(2)} !important` } } },
-    //         {
-    //           text: 'Delete',
-    //           menuItemProps: {
-    //             sx: {
-    //               color: 'error.main',
-    //               '&:not(.Mui-focusVisible):hover': {
-    //                 color: 'error.main',
-    //                 backgroundColor: theme => hexToRGBA(theme.palette.error.main, 0.08)
-    //               }
-    //             }
-    //           }
-    //         }
-    //       ]}
-    //     />
-    //   )
-    // }
   ]
 
   const getCategories = async () => {
@@ -341,30 +257,6 @@ const Subcategories = () => {
       setShowAddCatModal(false)
       setAddLoading(false)
     }
-  }
-
-  const handleShow_hide = async () => {
-    setChangeStatusLoading(true)
-    const token = localStorage.getItem('tradeVenddor')
-    await axios
-      .get(`${BASE_URL}categories/update_status/${rowData?.id}token=${token}`)
-      .then(res => {
-        console.log(res.data)
-        if (res?.data && res?.data?.status == 'success') {
-          toast.success(`تم ${rowData.is_active == '1' ? 'إلغاء تنشيط' : 'تنشيط'} الفئة بنجاح`)
-          getCategories()
-        } else if (res.data.status == 'error') {
-          toast.error(res.data.message)
-        } else {
-          toast.error('حدث خطأ ما')
-        }
-      })
-      .catch(e => console.log(e))
-      .finally(() => {
-        setChangeStatusModal(false)
-        setChangeStatusLoading(false)
-        setRowData({})
-      })
   }
 
   const handleClose = () => {
@@ -495,7 +387,7 @@ const Subcategories = () => {
         rows={categories ? categories : []}
         rowHeight={62}
         columns={columns}
-        pageSizeOptions={[5, 10]}
+        pageSizeOptions={[5, 10, 20, 40]}
         disableRowSelectionOnClick
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}

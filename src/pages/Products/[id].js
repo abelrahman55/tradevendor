@@ -45,7 +45,7 @@ import { useRouter } from 'next/router'
 
 const Products = () => {
   const { query } = useRouter()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   let localData = localStorage.getItem('tradeVenddor')
   let storeData = localData && JSON.parse(localData)
   const [allCategories, setAllCategories] = useState([])
@@ -476,7 +476,9 @@ const Products = () => {
         image: image?.data.image,
         store_id: storeData?.store_id ?? storeData?.id,
         subcats: query?.id,
-        branch_id: selectedBranches.includes('all') ? branches.map(it => it.id).join('**') : selectedBranches.join('**')
+        branch_id: query?.branch_id
+
+        // branch_id: selectedBranches.includes('all') ? branches.map(it => it.id).join('**') : selectedBranches.join('**')
       }
       await axios.post(`${BASE_URL}products/add_new`, { ...requestData })
 
@@ -490,30 +492,6 @@ const Products = () => {
       setShowAddCatModal(false)
       setAddLoading(false)
     }
-  }
-
-  const handleShow_hide = async () => {
-    setChangeStatusLoading(true)
-    const token = localStorage.getItem('tradeVenddor')
-    await axios
-      .get(`${BASE_URL}categories/update_status/${rowData?.id}token=${token}`)
-      .then(res => {
-        console.log(res.data)
-        if (res?.data && res?.data?.status == 'success') {
-          toast.success(`تم ${rowData.is_active == '1' ? 'إلغاء تنشيط' : 'تنشيط'} الفئة بنجاح`)
-          getCategories()
-        } else if (res.data.status == 'error') {
-          toast.error(res.data.message)
-        } else {
-          toast.error('حدث خطأ ما')
-        }
-      })
-      .catch(e => console.log(e))
-      .finally(() => {
-        setChangeStatusModal(false)
-        setChangeStatusLoading(false)
-        setRowData({})
-      })
   }
 
   const handleClose = () => {
@@ -562,7 +540,9 @@ const Products = () => {
         meta: rowData?.meta,
         image: editImg ? image?.data.image : rowData?.image,
         store_id: storeData?.store_id ?? storeData?.id,
-        branch_id: editProdBranches.join('**')
+        branch_id: query?.branch_id
+
+        // branch_id: editProdBranches.join('**')
       }
 
       // إرسال الطلب النهائي إلى السيرفر
@@ -586,6 +566,18 @@ const Products = () => {
     <>
       <div className='rowDiv flex-2-1 page_padding'>
         <div>
+          <div className='my-2 search_item'>
+            <div className='field_input'>
+              <CustomTextField
+                onChange={e => {
+                  setSearchValue(e.target.value)
+                }}
+                fullWidth
+                label={`${t('search_here')}`}
+                placeholder={t('search_here')}
+              />
+            </div>
+          </div>
           <div className='title_add d-flex align-items-center justify-content-between mb-2'>
             <h5>{`${t('prods')}`}</h5>
             <button
@@ -608,7 +600,7 @@ const Products = () => {
         rows={categories ? categories : []}
         rowHeight={62}
         columns={columns}
-        pageSizeOptions={[5, 10]}
+        pageSizeOptions={[5, 10, 20, 40]}
         disableRowSelectionOnClick
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
@@ -673,7 +665,7 @@ const Products = () => {
             pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
           }}
         >
-          <Typography variant='h3'>{`Add New Product`}</Typography>
+          <Typography variant='h3'>{t('Add New Products')}</Typography>
         </DialogTitle>
         <DialogContent
           sx={{
@@ -776,7 +768,8 @@ const Products = () => {
               />
             </FormControl>
           </Box>
-          <Box sx={{ my: 4 }}>
+
+          {/* <Box sx={{ my: 4 }}>
             <FormControl style={{ width: '100%' }}>
               <InputLabel htmlFor='outlined-age-native-simple'>{t('branches')}</InputLabel>
               <Select
@@ -794,7 +787,7 @@ const Products = () => {
                   <em>Placeholder</em>
                 </MenuItem>
                 <MenuItem key={0} value={'all'}>
-                  all
+                  {i18n.language == 'ar' ? 'الكل' : 'all'}
                 </MenuItem>
                 {branches &&
                   Array.isArray(branches) &&
@@ -805,7 +798,7 @@ const Products = () => {
                   ))}
               </Select>
             </FormControl>
-          </Box>
+          </Box> */}
 
           <Box sx={{ my: 4 }}>
             <FormControl fullWidth>
@@ -971,7 +964,7 @@ const Products = () => {
               />
             </FormControl>
           </Box>
-          <Box sx={{ my: 4 }}>
+          {/* <Box sx={{ my: 4 }}>
             <FormControl style={{ width: '100%' }}>
               <InputLabel htmlFor='outlined-age-native-simple'>{t('branches')}</InputLabel>
 
@@ -998,31 +991,8 @@ const Products = () => {
                   ))}
               </Select>
 
-              {/* <Select
-                native
-                label='Age'
-                defaultValue=''
-                inputProps={{
-                  name: 'age',
-                  id: 'outlined-age-native-simple'
-                }}
-                value={rowData?.branch_id}
-                onChange={e => {
-                  console.log(e.target.value)
-                  setRowData({ ...rowData, branch_id: e.target.value })
-                }}
-              >
-                {branches &&
-                  branches?.map(it => {
-                    return (
-                      <option key={it.id} value={it.id}>
-                        {it.name_ar}
-                      </option>
-                    )
-                  })}
-              </Select> */}
             </FormControl>
-          </Box>
+          </Box> */}
 
           <Box sx={{ my: 4 }}>
             <FormControl fullWidth>
