@@ -351,7 +351,7 @@ const BranSubs = () => {
       }
 
       // إرسال الطلب النهائي إلى السيرفر
-      await axios.post(`${BASE_URL}subcategories/add_new`, { ...requestData })
+      await axios.post(`${BASE_URL}subcategories/add_new`, { ...requestData, branch_id: query?.id, upd: 'true' })
 
       // استدعاء الدالة بعد الإضافة
       getCategories()
