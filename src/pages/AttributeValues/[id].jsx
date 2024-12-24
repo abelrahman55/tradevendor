@@ -43,7 +43,7 @@ import CustomAvatar from 'src/@core/components/mui/avatar'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 
-const ProductAttributes = () => {
+const AttributeValues = () => {
   const { query } = useRouter()
   const { t, i18n } = useTranslation()
   let localData = localStorage.getItem('tradeVenddor')
@@ -57,8 +57,8 @@ const ProductAttributes = () => {
     in_stock: '',
     attribute_id: '',
     attribute: '',
-    name_ar: '',
-    name_en: ''
+    value_ar: '',
+    value_en: ''
   })
   const [allAtts, setAllAtts] = useState([])
   const [showUpdateModal, setShowUpdateModal] = useState(false)
@@ -135,13 +135,13 @@ const ProductAttributes = () => {
       minWidth: 220,
       headerName: `${t('name_ar')}`,
       renderCell: ({ row }) => {
-        const { name_ar } = row
+        const { value_ar } = row
 
         return (
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
               <Typography noWrap sx={{ color: 'text.secondary', fontWeight: 500 }}>
-                <p>{name_ar}</p>
+                <p>{value_ar}</p>
               </Typography>
             </Box>
           </Box>
@@ -154,13 +154,13 @@ const ProductAttributes = () => {
       minWidth: 220,
       headerName: `${t('name_en')}`,
       renderCell: ({ row }) => {
-        const { name_en } = row
+        const { value_en } = row
 
         return (
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
               <Typography noWrap sx={{ color: 'text.secondary', fontWeight: 500 }}>
-                <p>{name_en}</p>
+                <p>{value_en}</p>
               </Typography>
             </Box>
           </Box>
@@ -233,29 +233,29 @@ const ProductAttributes = () => {
       }
     },
 
-    {
-      flex: 0.1,
-      field: 'values',
-      minWidth: 220,
-      headerName: `${t('values')}`,
-      renderCell: ({ row }) => {
-        const { id } = row
+    // {
+    //   flex: 0.1,
+    //   field: 'values',
+    //   minWidth: 220,
+    //   headerName: `${t('values')}`,
+    //   renderCell: ({ row }) => {
+    //     const { id } = row
 
-        return (
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-              <div className=''>
-                <Button variant='contained'>
-                  <Link style={{ color: 'white', textDecoration: 'none' }} href={`/AttributeValues/${row?.id}`}>
-                    {t('values')}
-                  </Link>
-                </Button>
-              </div>
-            </Box>
-          </Box>
-        )
-      }
-    },
+    //     return (
+    //       <Box sx={{ display: 'flex', alignItems: 'center' }}>
+    //         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+    //           <div className=''>
+    //             <Button variant='contained'>
+    //               <Link style={{ color: 'white', textDecoration: 'none' }} href={`/AttributeValues/${row?.id}`}>
+    //                 {t('values')}
+    //               </Link>
+    //             </Button>
+    //           </div>
+    //         </Box>
+    //       </Box>
+    //     )
+    //   }
+    // },
 
     {
       flex: 0.1,
@@ -317,14 +317,14 @@ const ProductAttributes = () => {
   const getCategories = async () => {
     setDataLoading(true)
     await axios
-      .get(`${BASE_URL}products/get_prod_atts/${query?.id}`)
+      .get(`${BASE_URL}products/get_atts_values/${query?.id}`)
       .then(res => {
-        console.log(res)
+        console.log(res.data, 'eklrekr')
         if (res.data.status == 'success') {
-          setCategoreis(res.data.data)
-          setOriginalData(res.data.data)
-          if (res.data.data.length > 0) {
-            setNewCat({ ...newCat, parent_id: res.data.data[0].id })
+          setCategoreis(res.data.result)
+          setOriginalData(res.data.result)
+          if (res.data.result.length > 0) {
+            setNewCat({ ...newCat, parent_id: res.data.result[0].id })
           }
         } else if (res.data.status == 'error') {
           toast.error(res.data.message)
@@ -378,11 +378,11 @@ const ProductAttributes = () => {
       const requestData = {
         ...newBranch,
         attribute_value_id: newBranch.attribute_id,
-        product_id: query?.id
+        attribute_id: query?.id
       }
 
       // إرسال الطلب النهائي إلى السيرفر
-      await axios.post(`${BASE_URL}products/add_product_att/${query?.id}`, { ...requestData })
+      await axios.post(`${BASE_URL}products/add_att_value/${query?.id}`, { ...requestData })
 
       // استدعاء الدالة بعد الإضافة
       getCategories()
@@ -429,7 +429,7 @@ const ProductAttributes = () => {
   const handleDel = id => {
     setAddLoading(true)
     axios
-      .get(BASE_URL + `products/del_attr_prod/${rowData?.id}`)
+      .get(BASE_URL + `products/del_attr_value/${rowData?.id}`)
       .then(res => {
         if (res.data.status == 'success') {
           toast.success(res.data.message)
@@ -478,7 +478,7 @@ const ProductAttributes = () => {
     }
 
     axios
-      .post(BASE_URL + `products/update_product_att/${rowData?.id}`, data_send)
+      .post(BASE_URL + `products/update_att_value/${rowData?.id}`, data_send)
       .then(res => {
         if (res.data.status == 'success') {
           setShowUpdateModal(false)
@@ -521,7 +521,7 @@ const ProductAttributes = () => {
       <div className='rowDiv flex-2-1 page_padding'>
         <div>
           <div className='title_add d-flex align-items-center justify-content-between mb-2'>
-            <h5>{`${t('attributes')}`}</h5>
+            <h5>{`${t('values')}`}</h5>
             <button
               onClick={() => {
                 setShowAddCatModal(true)
@@ -535,7 +535,7 @@ const ProductAttributes = () => {
           {/* {dataLoading ? <Loader size='md' /> : <TableLayout headers={categoriesHeader} data={categories} />} */}
         </div>
       </div>
-
+      {console.log(categories, 'categories')}
       <DataGrid
         autoHeight
         pagination
@@ -619,7 +619,7 @@ const ProductAttributes = () => {
             <FormControl fullWidth>
               <CustomTextField
                 onChange={e => {
-                  setNewBranch({ ...newBranch, name_ar: e.target.value })
+                  setNewBranch({ ...newBranch, value_ar: e.target.value })
                 }}
                 fullWidth
                 label={`${t('name_ar')}`}
@@ -631,7 +631,7 @@ const ProductAttributes = () => {
             <FormControl fullWidth>
               <CustomTextField
                 onChange={e => {
-                  setNewBranch({ ...newBranch, name_en: e.target.value })
+                  setNewBranch({ ...newBranch, value_en: e.target.value })
                 }}
                 fullWidth
                 label={`${t('name_en')}`}
@@ -742,7 +742,7 @@ const ProductAttributes = () => {
             pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
           }}
         >
-          <Typography variant='h3'>{t('Update Product Attribute')}</Typography>
+          <Typography variant='h3'>{t('update Product Attribute value')}</Typography>
         </DialogTitle>
         <DialogContent
           sx={{
@@ -754,9 +754,9 @@ const ProductAttributes = () => {
             <FormControl fullWidth>
               <CustomTextField
                 onChange={e => {
-                  setRowData({ ...rowData, name_ar: e.target.value })
+                  setRowData({ ...rowData, value_ar: e.target.value })
                 }}
-                value={rowData?.name_ar}
+                value={rowData?.value_ar}
                 fullWidth
                 label={`${t('name_ar')}`}
                 placeholder={t('name_ar')}
@@ -767,9 +767,9 @@ const ProductAttributes = () => {
             <FormControl fullWidth>
               <CustomTextField
                 onChange={e => {
-                  setRowData({ ...rowData, name_en: e.target.value })
+                  setRowData({ ...rowData, value_en: e.target.value })
                 }}
-                value={rowData?.name_en}
+                value={rowData?.value_en}
                 fullWidth
                 label={`${t('name_en')}`}
                 placeholder={t('name_en')}
@@ -917,4 +917,4 @@ const ProductAttributes = () => {
   )
 }
 
-export default ProductAttributes
+export default AttributeValues
