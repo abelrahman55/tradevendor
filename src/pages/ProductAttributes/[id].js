@@ -211,7 +211,7 @@ const ProductAttributes = () => {
       flex: 0.1,
       field: 'update',
       minWidth: 220,
-      headerName: `${t('update')}`,
+      headerName: `${t('edit')}`,
       renderCell: ({ row }) => {
         const { id } = row
 
@@ -225,7 +225,7 @@ const ProductAttributes = () => {
                 }}
                 className=''
               >
-                <Button variant='contained'>{`${t('update')}`}</Button>
+                <Button variant='contained'>{`${t('edit')}`}</Button>
               </div>
             </Box>
           </Box>
@@ -261,7 +261,7 @@ const ProductAttributes = () => {
       flex: 0.1,
       field: 'delete',
       minWidth: 220,
-      headerName: `${t('delete')}`,
+      headerName: `${t('Delete')}`,
       renderCell: ({ row }) => {
         const { id } = row
 
@@ -275,7 +275,7 @@ const ProductAttributes = () => {
                 }}
                 className=''
               >
-                <Button variant='contained'>{`${t('delete')}`}</Button>
+                <Button variant='contained'>{`${t('Delete')}`}</Button>
               </div>
             </Box>
           </Box>
@@ -542,7 +542,7 @@ const ProductAttributes = () => {
         rows={categories ? categories : []}
         rowHeight={62}
         columns={columns}
-        pageSizeOptions={[5, 10, 20, 40]}
+        pageSizeOptions={[10, 20, 40, 50]}
         disableRowSelectionOnClick
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
@@ -879,7 +879,7 @@ const ProductAttributes = () => {
             pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
           }}
         >
-          <Typography variant='h3'>{`Delete`}</Typography>
+          <Typography variant='h3'>{t('Delete')}</Typography>
         </DialogTitle>
         <DialogContent
           sx={{
@@ -899,7 +899,7 @@ const ProductAttributes = () => {
         >
           <Box className='demo-space-x'>
             <Button disabled={addLoading} type='submit' variant='contained' onClick={handleDel}>
-              {t('delete')}
+              {t('Delete')}
             </Button>
             <Button
               color='secondary'

@@ -131,6 +131,23 @@ const ProductAddons = () => {
   const columns = [
     {
       flex: 0.1,
+      field: 'image',
+      minWidth: 220,
+      headerName: `${t('image')}`,
+      renderCell: ({ row }) => {
+        const { image } = row
+
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <img style={{ width: '50px' }} src={image} alt='' />
+            </Box>
+          </Box>
+        )
+      }
+    },
+    {
+      flex: 0.1,
       field: 'name_ar',
       minWidth: 220,
       headerName: `${t('name_ar')}`,
@@ -505,7 +522,7 @@ const ProductAddons = () => {
         rows={categories ? categories : []}
         rowHeight={62}
         columns={columns}
-        pageSizeOptions={[5, 10, 20, 40]}
+        pageSizeOptions={[10, 20, 40, 50]}
         disableRowSelectionOnClick
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}

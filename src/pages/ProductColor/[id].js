@@ -190,7 +190,7 @@ const ProductColor = () => {
       flex: 0.1,
       field: 'delete',
       minWidth: 220,
-      headerName: `${t('delete')}`,
+      headerName: `${t('Delete')}`,
       renderCell: ({ row }) => {
         const { id } = row
 
@@ -204,7 +204,7 @@ const ProductColor = () => {
                 }}
                 className=''
               >
-                <Button variant='contained'>{`${t('delete')}`}</Button>
+                <Button variant='contained'>{`${t('Delete')}`}</Button>
               </div>
             </Box>
           </Box>
@@ -496,7 +496,7 @@ const ProductColor = () => {
         rows={categories ? categories : []}
         rowHeight={62}
         columns={columns}
-        pageSizeOptions={[5, 10, 20, 40]}
+        pageSizeOptions={[10, 20, 40, 50]}
         disableRowSelectionOnClick
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
@@ -549,7 +549,7 @@ const ProductColor = () => {
                 setShowAddCatModal(false)
               }}
             >
-              Submit
+              {t('Submit')}
             </Button>
             <Button
               color='secondary'
@@ -558,7 +558,7 @@ const ProductColor = () => {
                 setShowAddCatModal(false)
               }}
             >
-              Cancel
+              {t('Cancel')}
             </Button>
           </Box>
         </DialogActions>
@@ -806,7 +806,7 @@ const ProductColor = () => {
         >
           <Box className='demo-space-x'>
             <Button disabled={addLoading} type='submit' variant='contained' onClick={handleDel}>
-              {t('delete')}
+              {t('Delete')}
             </Button>
             <Button
               color='secondary'

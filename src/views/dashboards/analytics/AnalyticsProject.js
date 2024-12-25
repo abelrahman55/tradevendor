@@ -177,7 +177,7 @@ const AnalyticsProject = () => {
         rows={data}
         rowHeight={62}
         columns={columns}
-        pageSizeOptions={[5, 10, 20, 40]}
+        pageSizeOptions={[10, 20, 40, 50]}
         disableRowSelectionOnClick
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}

@@ -167,6 +167,44 @@ const AttributeValues = () => {
         )
       }
     },
+    {
+      flex: 0.1,
+      field: 'in_stock',
+      minWidth: 220,
+      headerName: `${t('in_stock')}`,
+      renderCell: ({ row }) => {
+        const { in_stock } = row
+
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <Typography noWrap sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                <p>{in_stock}</p>
+              </Typography>
+            </Box>
+          </Box>
+        )
+      }
+    },
+    {
+      flex: 0.1,
+      field: 'extra_price',
+      minWidth: 220,
+      headerName: `${t('extra_price')}`,
+      renderCell: ({ row }) => {
+        const { extra_price } = row
+
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <Typography noWrap sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                <p>{extra_price}</p>
+              </Typography>
+            </Box>
+          </Box>
+        )
+      }
+    },
 
     // {
     //   flex: 0.1,
@@ -211,7 +249,7 @@ const AttributeValues = () => {
       flex: 0.1,
       field: 'update',
       minWidth: 220,
-      headerName: `${t('update')}`,
+      headerName: `${t('edit')}`,
       renderCell: ({ row }) => {
         const { id } = row
 
@@ -225,7 +263,7 @@ const AttributeValues = () => {
                 }}
                 className=''
               >
-                <Button variant='contained'>{`${t('update')}`}</Button>
+                <Button variant='contained'>{`${t('edit')}`}</Button>
               </div>
             </Box>
           </Box>
@@ -261,7 +299,7 @@ const AttributeValues = () => {
       flex: 0.1,
       field: 'delete',
       minWidth: 220,
-      headerName: `${t('delete')}`,
+      headerName: `${t('Delete')}`,
       renderCell: ({ row }) => {
         const { id } = row
 
@@ -275,7 +313,7 @@ const AttributeValues = () => {
                 }}
                 className=''
               >
-                <Button variant='contained'>{`${t('delete')}`}</Button>
+                <Button variant='contained'>{`${t('Delete')}`}</Button>
               </div>
             </Box>
           </Box>
@@ -457,11 +495,15 @@ const AttributeValues = () => {
         console.log(searchValue)
 
         const newData = originalData.filter(cat => {
-          if (searchValue.length >= 1 && !cat.name_ar.includes(searchValue) && !cat.name_en.includes(searchValue)) {
-            return false
+          if (
+            searchValue.length > 0 &&
+            (cat.value_ar.toLowerCase().includes(searchValue.toLowerCase()) ||
+              cat.value_en.toLowerCase().includes(searchValue.toLowerCase()))
+          ) {
+            return true
           }
 
-          return true
+          return false
         })
         setCategoreis(newData)
       } else {
@@ -520,6 +562,18 @@ const AttributeValues = () => {
     <>
       <div className='rowDiv flex-2-1 page_padding'>
         <div>
+          <div className='my-2 search_item'>
+            <div className='field_input'>
+              <CustomTextField
+                onChange={e => {
+                  setSearchValue(e.target.value)
+                }}
+                fullWidth
+                label={`${t('search_here')}`}
+                placeholder={t('search_here')}
+              />
+            </div>
+          </div>
           <div className='title_add d-flex align-items-center justify-content-between mb-2'>
             <h5>{`${t('values')}`}</h5>
             <button
@@ -542,7 +596,7 @@ const AttributeValues = () => {
         rows={categories ? categories : []}
         rowHeight={62}
         columns={columns}
-        pageSizeOptions={[5, 10, 20, 40]}
+        pageSizeOptions={[10, 20, 40, 50]}
         disableRowSelectionOnClick
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
@@ -636,6 +690,30 @@ const AttributeValues = () => {
                 fullWidth
                 label={`${t('name_en')}`}
                 placeholder={t('name_en')}
+              />
+            </FormControl>
+          </Box>
+          <Box sx={{ my: 4 }}>
+            <FormControl fullWidth>
+              <CustomTextField
+                onChange={e => {
+                  setNewBranch({ ...newBranch, in_stock: e.target.value })
+                }}
+                fullWidth
+                label={`${t('in_stock')}`}
+                placeholder={t('in_stock')}
+              />
+            </FormControl>
+          </Box>
+          <Box sx={{ my: 4 }}>
+            <FormControl fullWidth>
+              <CustomTextField
+                onChange={e => {
+                  setNewBranch({ ...newBranch, extra_price: e.target.value })
+                }}
+                fullWidth
+                label={`${t('extra_price')}`}
+                placeholder={t('extra_price')}
               />
             </FormControl>
           </Box>
@@ -773,6 +851,32 @@ const AttributeValues = () => {
                 fullWidth
                 label={`${t('name_en')}`}
                 placeholder={t('name_en')}
+              />
+            </FormControl>
+          </Box>
+          <Box sx={{ my: 4 }}>
+            <FormControl fullWidth>
+              <CustomTextField
+                onChange={e => {
+                  setRowData({ ...rowData, extra_price: e.target.value })
+                }}
+                value={rowData?.extra_price}
+                fullWidth
+                label={`${t('extra_price')}`}
+                placeholder={t('extra_price')}
+              />
+            </FormControl>
+          </Box>
+          <Box sx={{ my: 4 }}>
+            <FormControl fullWidth>
+              <CustomTextField
+                onChange={e => {
+                  setRowData({ ...rowData, in_stock: e.target.value })
+                }}
+                value={rowData?.in_stock}
+                fullWidth
+                label={`${t('in_stock')}`}
+                placeholder={t('in_stock')}
               />
             </FormControl>
           </Box>

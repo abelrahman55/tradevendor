@@ -600,7 +600,7 @@ const Products = () => {
         rows={categories ? categories : []}
         rowHeight={62}
         columns={columns}
-        pageSizeOptions={[5, 10, 20, 40]}
+        pageSizeOptions={[10, 20, 40, 50]}
         disableRowSelectionOnClick
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
@@ -868,7 +868,7 @@ const Products = () => {
             pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
           }}
         >
-          <Typography variant='h3'>{`Edit Product`}</Typography>
+          <Typography variant='h3'>{t('Edit Product')}</Typography>
         </DialogTitle>
         <DialogContent
           sx={{
