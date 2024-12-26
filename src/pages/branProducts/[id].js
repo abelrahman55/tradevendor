@@ -35,7 +35,7 @@ import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
 import TableContainer from '@mui/material/TableContainer'
 import FormControlLabel from '@mui/material/FormControlLabel'
-import { Icon, InputLabel, MenuItem, OutlinedInput } from '@mui/material'
+import { Chip, Icon, InputLabel, MenuItem, OutlinedInput } from '@mui/material'
 import CustomTextField from 'src/@core/components/mui/text-field'
 import { BASE_URL } from 'src/constants'
 import OptionsMenu from 'src/@core/components/option-menu'
@@ -45,6 +45,11 @@ import { useRouter } from 'next/router'
 import { width } from '@mui/system'
 
 const BranchProducts = () => {
+  const [fileData, setFileData] = useState({
+    file: null,
+    subcats: []
+  })
+
   const { query } = useRouter()
   console.log(query?.id)
   const { t, i18n } = useTranslation()
@@ -68,6 +73,7 @@ const BranchProducts = () => {
     description_en: '',
     description_ar: ''
   })
+  const [showAddExcel, setShowAddExcel] = useState(false)
   const [selectedSubcats, setSelectedSubcats] = useState([])
   const [showEditModal, setShowEditModal] = useState(false)
   const [editImg, setEditImg] = useState('')
@@ -691,14 +697,24 @@ const BranchProducts = () => {
 
           <div className='title_add d-flex align-items-center justify-content-between mb-2'>
             <h5>{`${t('products')}`}</h5>
-            <button
-              onClick={() => {
-                setShowAddCatModal(true)
-              }}
-              className='btn btn-success'
-            >
-              {t('add')}
-            </button>
+            <div className='d-flex gap-3 align-items-center'>
+              <button
+                onClick={() => {
+                  setShowAddCatModal(true)
+                }}
+                className='btn btn-success'
+              >
+                {t('add')}
+              </button>
+              <div
+                onClick={() => {
+                  setShowAddExcel(true)
+                }}
+                className='up_u_ex'
+              >
+                <img style={{ width: '30px', cursor: 'pointer' }} src='/images/xlxs.png' alt='' />
+              </div>
+            </div>
           </div>
 
           {/* {dataLoading ? <Loader size='md' /> : <TableLayout headers={categoriesHeader} data={categories} />} */}
@@ -968,6 +984,96 @@ const BranchProducts = () => {
                 label={`${t('meta')}`}
                 placeholder={t('meta')}
               />
+            </FormControl>
+          </Box>
+        </DialogContent>
+        <DialogActions
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`],
+            pb: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
+          }}
+        >
+          <Box className='demo-space-x'>
+            <Button disabled={addLoading} type='submit' variant='contained' onClick={handleAddFile}>
+              {t('add')}
+            </Button>
+            <Button
+              color='secondary'
+              variant='tonal'
+              onClick={() => {
+                setShowAddCatModal(false)
+              }}
+            >
+              {t('cancel')}
+            </Button>
+          </Box>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        fullWidth
+        maxWidth='md'
+        scroll='body'
+        onClose={() => {
+          setShowAddCatModal(false)
+        }}
+        open={showAddExcel}
+      >
+        <DialogTitle
+          component='div'
+          sx={{
+            textAlign: 'center',
+            px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`],
+            pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
+          }}
+        >
+          <Typography variant='h3'>{t('Add_New_Product')}</Typography>
+        </DialogTitle>
+        <DialogContent
+          sx={{
+            pb: theme => `${theme.spacing(5)} !important`,
+            px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`]
+          }}
+        >
+          <Box sx={{ my: 4 }}>
+            <div className='field_input'>
+              <label htmlFor=''>{t('file')}</label>
+              <input
+                type='file'
+                onChange={e => {
+                  setFileData({ ...fileData, file: e.target.files[0] })
+                }}
+              />
+            </div>
+          </Box>
+
+          <Box sx={{ my: 4 }}>
+            <FormControl style={{ width: '100%' }}>
+              <InputLabel id='multi-select-label'>{t('subs')}</InputLabel>
+              <Select
+                labelId='multi-select-label'
+                multiple
+                value={fileData?.subcats || []}
+                onChange={e => {
+                  setFileData({ ...fileData, subcats: e.target.value })
+                }}
+                renderValue={selected => (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {selected.map(value => (
+                      <Chip key={value} label={subcategories.find(it => it.id === value)?.title_en || value} />
+                    ))}
+                  </Box>
+                )}
+              >
+                {subcategories &&
+                  subcategories.map(it => (
+                    <MenuItem key={it.id} value={it.id}>
+                      {i18n.language === 'ar' ? it.title_ar : it.title_en}
+                    </MenuItem>
+                  ))}
+              </Select>
             </FormControl>
           </Box>
         </DialogContent>
