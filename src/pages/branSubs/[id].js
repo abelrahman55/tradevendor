@@ -45,6 +45,7 @@ import { useRouter } from 'next/router'
 
 const BranSubs = () => {
   const { query } = useRouter()
+  console.log(query)
   console.log(query?.id)
   const { t } = useTranslation()
   let localData = localStorage.getItem('tradeVenddor')
@@ -394,7 +395,7 @@ const BranSubs = () => {
 
   useEffect(() => {
     getCategories()
-  }, [query?.id])
+  }, [query])
 
   const getStoreSubcategories = async () => {
     const token = localStorage.getItem('TradeOfferToken')
