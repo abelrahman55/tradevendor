@@ -482,9 +482,9 @@ const BranchesPage = () => {
         return (
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-              <Link href={`/BranSubs/${id}`}>
-                <Button variant='contained'>{`${t('subs')}`}</Button>
-              </Link>
+              <Button variant='contained' component={Link} href={`/BranSubs/${id}`}>
+                {t('subs')}
+              </Button>
             </Box>
           </Box>
         )
