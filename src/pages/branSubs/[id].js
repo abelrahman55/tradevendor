@@ -391,6 +391,7 @@ const BranSubs = () => {
 
   useEffect(() => {
     storeBranches()
+    getCategories()
   }, [])
 
   useEffect(() => {
