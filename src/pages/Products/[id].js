@@ -51,6 +51,7 @@ const Products = () => {
   const [allCategories, setAllCategories] = useState([])
   const [selectedBranches, setSelectedBranches] = useState([])
   const [selectedCategories, setSelectedCategories] = useState([])
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   const [newBranch, setNewBranch] = useState({
     name_en: '',
@@ -368,6 +369,32 @@ const Products = () => {
           </Box>
         )
       }
+    },
+
+    {
+      flex: 0.1,
+      field: 'delete',
+      minWidth: 220,
+      headerName: `${t('Delete')}`,
+      renderCell: ({ row }) => {
+        const { id } = row
+
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <div
+                onClick={() => {
+                  setShowDeleteModal(true)
+                  setRowData(row)
+                }}
+                className=''
+              >
+                <Button variant='contained'>{`${t('Delete')}`}</Button>
+              </div>
+            </Box>
+          </Box>
+        )
+      }
     }
 
     // {
@@ -458,6 +485,29 @@ const Products = () => {
   useEffect(() => {
     getCategories()
   }, [query?.id])
+
+  const handleDel = id => {
+    setAddLoading(true)
+    axios
+      .get(BASE_URL + `products/delete_product/${rowData?.id}`)
+      .then(res => {
+        if (res.data.status == 'success') {
+          toast.success(res.data.message)
+          getCategories()
+          setShowDeleteModal(false)
+        } else if (res.data.status == 'faild') {
+          toast.error(res.data.message)
+        } else {
+          toast.error('حدث خطأ ما')
+        }
+      })
+      .catch(e => {
+        console.log(e)
+      })
+      .finally(() => {
+        setAddLoading(false)
+      })
+  }
 
   const handleAddFile = async () => {
     setAddLoading(true)
@@ -1039,6 +1089,58 @@ const Products = () => {
               variant='tonal'
               onClick={() => {
                 setShowEditModal(false)
+              }}
+            >
+              {t('cancel')}
+            </Button>
+          </Box>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        fullWidth
+        maxWidth='md'
+        scroll='body'
+        onClose={() => {
+          setShowDeleteModal(false)
+        }}
+        open={showDeleteModal}
+      >
+        <DialogTitle
+          component='div'
+          sx={{
+            textAlign: 'center',
+            px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`],
+            pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
+          }}
+        >
+          <Typography variant='h3'>{t(`Delete`)}</Typography>
+        </DialogTitle>
+        <DialogContent
+          sx={{
+            pb: theme => `${theme.spacing(5)} !important`,
+            px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`]
+          }}
+        >
+          <p>{t('do_you_want_to_delete_this')}</p>
+        </DialogContent>
+        <DialogActions
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`],
+            pb: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
+          }}
+        >
+          <Box className='demo-space-x'>
+            <Button disabled={addLoading} type='submit' variant='contained' onClick={handleDel}>
+              {t('Delete')}
+            </Button>
+            <Button
+              color='secondary'
+              variant='tonal'
+              onClick={() => {
+                setShowDeleteModal(false)
               }}
             >
               {t('cancel')}
