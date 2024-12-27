@@ -55,6 +55,9 @@ const BranchProducts = () => {
   const { t, i18n } = useTranslation()
   let localData = localStorage.getItem('tradeVenddor')
   let storeData = localData && JSON.parse(localData)
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+
   const [allCategories, setAllCategories] = useState([])
   const [subcategories, setSubcategories] = useState([])
   const [subCats, setSubCats] = useState([])
@@ -379,6 +382,31 @@ const BranchProducts = () => {
     },
     {
       flex: 0.1,
+      field: 'delete',
+      minWidth: 220,
+      headerName: `${t('Delete')}`,
+      renderCell: ({ row }) => {
+        const { id } = row
+
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <div
+                onClick={() => {
+                  setShowDeleteModal(true)
+                  setRowData(row)
+                }}
+                className=''
+              >
+                <Button variant='contained'>{`${t('Delete')}`}</Button>
+              </div>
+            </Box>
+          </Box>
+        )
+      }
+    },
+    {
+      flex: 0.1,
       field: 'up_stock',
       minWidth: 220,
       headerName: `${t('up_stock')}`,
@@ -523,6 +551,29 @@ const BranchProducts = () => {
       setShowAddCatModal(false)
       setAddLoading(false)
     }
+  }
+
+  const handleDel = id => {
+    setAddLoading(true)
+    axios
+      .get(BASE_URL + `products/delete_product/${rowData?.id}`)
+      .then(res => {
+        if (res.data.status == 'success') {
+          toast.success(res.data.message)
+          getCategories()
+          setShowDeleteModal(false)
+        } else if (res.data.status == 'faild') {
+          toast.error(res.data.message)
+        } else {
+          toast.error('حدث خطأ ما')
+        }
+      })
+      .catch(e => {
+        console.log(e)
+      })
+      .finally(() => {
+        setAddLoading(false)
+      })
   }
 
   const getStoreSubcategories = async () => {
@@ -735,7 +786,6 @@ const BranchProducts = () => {
               onChange={e => {
                 setSelectedSubcats(e.target.value)
               }}
-              // renderValue={selected => selected.join(', ')}
             >
               <MenuItem disabled value=''>
                 <em>{i18n.language === 'ar' ? 'اختر' : 'Select'}</em>
@@ -1350,6 +1400,58 @@ const BranchProducts = () => {
               variant='tonal'
               onClick={() => {
                 setShowUpStock(false)
+              }}
+            >
+              {t('cancel')}
+            </Button>
+          </Box>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        fullWidth
+        maxWidth='md'
+        scroll='body'
+        onClose={() => {
+          setShowDeleteModal(false)
+        }}
+        open={showDeleteModal}
+      >
+        <DialogTitle
+          component='div'
+          sx={{
+            textAlign: 'center',
+            px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`],
+            pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
+          }}
+        >
+          <Typography variant='h3'>{t(`Delete`)}</Typography>
+        </DialogTitle>
+        <DialogContent
+          sx={{
+            pb: theme => `${theme.spacing(5)} !important`,
+            px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`]
+          }}
+        >
+          <p>{t('do_you_want_to_delete_this')}</p>
+        </DialogContent>
+        <DialogActions
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`],
+            pb: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
+          }}
+        >
+          <Box className='demo-space-x'>
+            <Button disabled={addLoading} type='submit' variant='contained' onClick={handleDel}>
+              {t('Delete')}
+            </Button>
+            <Button
+              color='secondary'
+              variant='tonal'
+              onClick={() => {
+                setShowDeleteModal(false)
               }}
             >
               {t('cancel')}

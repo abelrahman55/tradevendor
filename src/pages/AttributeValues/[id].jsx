@@ -983,7 +983,7 @@ const AttributeValues = () => {
             pt: theme => [`${theme.spacing(8)} !important`, `${theme.spacing(12.5)} !important`]
           }}
         >
-          <Typography variant='h3'>{`Delete`}</Typography>
+          <Typography variant='h3'>{t(`Delete`)}</Typography>
         </DialogTitle>
         <DialogContent
           sx={{
