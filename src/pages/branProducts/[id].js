@@ -661,17 +661,19 @@ const BranchProducts = () => {
 
   useEffect(() => {
     console.log(selectedSubcats)
-    setCategoreis(
-      originalData &&
-        originalData.filter(it => {
-          console.log(it.subcats)
-          if (it.subcats.includes(selectedSubcats[0] * 1)) {
-            return { ...it }
-          }
 
-          return null
-        })
-    )
+    if (selectedSubcats.includes('all')) {
+      console.log('All categories selected')
+      setCategoreis(originalData)
+    } else {
+      setCategoreis(
+        originalData &&
+          originalData.filter(it => {
+            // Check if any of the selected subcategories exist in `it.subcats`
+            return it.subcats.some(subcat => selectedSubcats.includes(subcat))
+          })
+      )
+    }
   }, [selectedSubcats])
 
   useEffect(() => {
@@ -724,34 +726,29 @@ const BranchProducts = () => {
       <div className='filter_products'>
         <div className='w-100 my-2'>
           <h4>Subcategories</h4>
-          <FormControl style={{ width: '100%' }}>
-            <InputLabel htmlFor='outlined-age-native-simple'>{t('subs')}</InputLabel>
+          <FormControl fullWidth variant='outlined'>
+            <InputLabel id='age-select-label'>{i18n.language === 'ar' ? 'الفئة العمرية' : 'Age'}</InputLabel>
             <Select
-              native
-              label='Age'
-              defaultValue=''
-              inputProps={{
-                name: 'age',
-                id: 'outlined-age-native-simple'
-              }}
+              labelId='age-select-label'
+              multiple
               value={selectedSubcats}
               onChange={e => {
-                console.log(e.target.value)
-                setSelectedSubcats([...e.target.value])
+                setSelectedSubcats(e.target.value)
               }}
+              // renderValue={selected => selected.join(', ')}
             >
-              <option disabled={true}></option>
-              {/*<option key={0} value={'all'}>
-                  {i18n.language == 'ar' ? 'الكل' : 'all'}
-                </option>*/}
+              <MenuItem disabled value=''>
+                <em>{i18n.language === 'ar' ? 'اختر' : 'Select'}</em>
+              </MenuItem>
+              <MenuItem key='all' value='all'>
+                {i18n.language === 'ar' ? 'الكل' : 'All'}
+              </MenuItem>
               {subcategories &&
-                subcategories?.map(it => {
-                  return (
-                    <option key={it.id} value={it.id}>
-                      {i18n.language == 'ar' ? it.title_ar : it.title_en}
-                    </option>
-                  )
-                })}
+                subcategories.map(it => (
+                  <MenuItem key={it.id} value={it.id}>
+                    {i18n.language === 'ar' ? it.title_ar : it.title_en}
+                  </MenuItem>
+                ))}
             </Select>
           </FormControl>
         </div>

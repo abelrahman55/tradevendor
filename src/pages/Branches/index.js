@@ -1234,7 +1234,13 @@ const BranchesPage = () => {
             <Button disabled={addLoading} type='submit' variant='contained' onClick={handelEditBran}>
               {t('yes')}
             </Button>
-            <Button color='secondary' variant='tonal' onClick={handleClose}>
+            <Button
+              color='secondary'
+              variant='tonal'
+              onClick={() => {
+                setShowEditModal(false)
+              }}
+            >
               {t('cancel')}
             </Button>
           </Box>
