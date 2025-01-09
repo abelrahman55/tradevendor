@@ -55,7 +55,9 @@ const ProductSizes = () => {
   const [newBranch, setNewBranch] = useState({
     extra_price: '',
     in_stock: '',
-    size_id: ''
+    size_id: '',
+    size_ar: '',
+    size_en: ''
   })
   const [allAtts, setAllAtts] = useState([])
 
@@ -82,25 +84,45 @@ const ProductSizes = () => {
     order: '',
     parent_id: ''
   })
-  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 5 })
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 })
 
   const [branches, setBranches] = useState([])
 
   const columns = [
     {
       flex: 0.1,
-      field: 'size',
+      field: 'size_ar',
       minWidth: 220,
-      headerName: `${t('size')}`,
+      headerName: `${t('size_ar')}`,
       renderCell: ({ row }) => {
-        const { size } = row
-        console.log(size)
+        const { size_ar } = row
+        console.log(size_ar)
 
         return (
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
               <Typography noWrap sx={{ color: 'text.secondary', fontWeight: 500 }}>
-                <p>{row?.size?.size}</p>
+                <p>{row?.size_ar}</p>
+              </Typography>
+            </Box>
+          </Box>
+        )
+      }
+    },
+    {
+      flex: 0.1,
+      field: 'size_en',
+      minWidth: 220,
+      headerName: `${t('size_en')}`,
+      renderCell: ({ row }) => {
+        const { size_en } = row
+        console.log(size_en)
+
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <Typography noWrap sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                <p>{row?.size_en}</p>
               </Typography>
             </Box>
           </Box>
@@ -292,6 +314,7 @@ const ProductSizes = () => {
       // تجهيز بيانات الطلب النهائي بعد رفع الصورة والصوت
       const requestData = {
         ...newBranch,
+        extra_price: newBranch?.extra_price ?? 0,
         size: newBranch.color_id,
         product_id: query?.id
       }
@@ -538,6 +561,30 @@ const ProductSizes = () => {
             <FormControl fullWidth>
               <CustomTextField
                 onChange={e => {
+                  setNewBranch({ ...newBranch, size_ar: e.target.value })
+                }}
+                fullWidth
+                label={`${t('size_ar')}`}
+                placeholder={t('size_ar')}
+              />
+            </FormControl>
+          </Box>
+          <Box sx={{ my: 4 }}>
+            <FormControl fullWidth>
+              <CustomTextField
+                onChange={e => {
+                  setNewBranch({ ...newBranch, size_en: e.target.value })
+                }}
+                fullWidth
+                label={`${t('size_en')}`}
+                placeholder={t('size_en')}
+              />
+            </FormControl>
+          </Box>
+          <Box sx={{ my: 4 }}>
+            <FormControl fullWidth>
+              <CustomTextField
+                onChange={e => {
                   setNewBranch({ ...newBranch, extra_price: e.target.value })
                 }}
                 fullWidth
@@ -547,7 +594,7 @@ const ProductSizes = () => {
             </FormControl>
           </Box>
 
-          <Box sx={{ my: 4 }}>
+          {/* <Box sx={{ my: 4 }}>
             <FormControl style={{ width: '100%' }}>
               <InputLabel htmlFor='outlined-age-native-simple'>{t('sizes')}</InputLabel>
               <Select
@@ -572,7 +619,7 @@ const ProductSizes = () => {
                   })}
               </Select>
             </FormControl>
-          </Box>
+          </Box> */}
         </DialogContent>
         <DialogActions
           sx={{
@@ -650,8 +697,34 @@ const ProductSizes = () => {
               />
             </FormControl>
           </Box>
-
           <Box sx={{ my: 4 }}>
+            <FormControl fullWidth>
+              <CustomTextField
+                onChange={e => {
+                  setRowData({ ...rowData, size_ar: e.target.value })
+                }}
+                value={rowData?.size_ar}
+                fullWidth
+                label={`${t('size_ar')}`}
+                placeholder={t('size_ar')}
+              />
+            </FormControl>
+          </Box>
+          <Box sx={{ my: 4 }}>
+            <FormControl fullWidth>
+              <CustomTextField
+                onChange={e => {
+                  setRowData({ ...rowData, size_en: e.target.value })
+                }}
+                value={rowData?.size_en}
+                fullWidth
+                label={`${t('size_en')}`}
+                placeholder={t('size_en')}
+              />
+            </FormControl>
+          </Box>
+
+          {/* <Box sx={{ my: 4 }}>
             <FormControl style={{ width: '100%' }}>
               <InputLabel htmlFor='outlined-age-native-simple'>{t('sizes')}</InputLabel>
               <Select
@@ -678,7 +751,7 @@ const ProductSizes = () => {
                   })}
               </Select>
             </FormControl>
-          </Box>
+          </Box> */}
         </DialogContent>
         <DialogActions
           sx={{

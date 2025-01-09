@@ -91,7 +91,7 @@ const MagazineImages = () => {
     order: '',
     parent_id: ''
   })
-  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 5 })
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 })
 
   const [imgEn, setImgEn] = useState(null)
   const [imgAr, setImgAr] = useState(null)

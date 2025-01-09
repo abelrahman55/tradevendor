@@ -147,7 +147,7 @@ const AnalyticsProject = () => {
   // ** State
   const [data, setData] = useState([])
   const [value, setValue] = useState('')
-  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 5 })
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 })
   useEffect(() => {
     axios.get('/pages/profile-table', { params: { q: value } }).then(response => {
       setData(response.data)

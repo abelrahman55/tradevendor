@@ -60,7 +60,7 @@ const Subcategories = () => {
     order: '',
     parent_id: ''
   })
-  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 5 })
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 })
 
   const [editImgUrl, setEditImgUrl] = useState('')
 

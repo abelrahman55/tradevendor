@@ -45,13 +45,18 @@ import { useRouter } from 'next/router'
 
 const OfferProducts = () => {
   const { query } = useRouter()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   let localData = localStorage.getItem('tradeVenddor')
   let storeData = localData && JSON.parse(localData)
+  const [brabchesProducts, setBrabchesProducts] = useState([])
+  const [originalBranchesProducts, setOriginalBranchesProducts] = useState([])
   const [allCategories, setAllCategories] = useState([])
   const [selectedProducts, setSelectedProducts] = useState([])
   const [selectedCategories, setSelectedCategories] = useState([])
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [selectedSubcats, setSelectedSubCats] = useState([])
+  const [branchesSubcategories, setBranchesSubcategories] = useState([])
+  const [searchValue2, setSearchValue2] = useState('')
 
   const [newBranch, setNewBranch] = useState({
     name_en: '',
@@ -93,7 +98,8 @@ const OfferProducts = () => {
     order: '',
     parent_id: ''
   })
-  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 5 })
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 })
+  const [paginationModel2, setPaginationModel2] = useState({ page: 0, pageSize: 10 })
 
   const [imgEn, setImgEn] = useState(null)
   const [imgAr, setImgAr] = useState(null)
@@ -111,6 +117,121 @@ const OfferProducts = () => {
   const [selectedFile, setSelectedFile] = useState(null)
 
   const [branches, setBranches] = useState([])
+
+  const columnsProducts = [
+    {
+      flex: 0.1,
+      field: 'Select',
+      minWidth: 220,
+      headerName: `${t('select')}`,
+      renderCell: ({ row }) => {
+        const { id, selected } = row
+
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            {/* {renderName(row)} */}
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <input
+                style={{ width: '20px', height: '20px' }}
+                onClick={() => {
+                  setBrabchesProducts(
+                    brabchesProducts.map(it => ({ ...it, selected: it.id == row?.id ? !it.selected : it.selected }))
+                  )
+                }}
+                type='checkbox'
+                checked={selected}
+              />
+            </Box>
+          </Box>
+        )
+      }
+    },
+    {
+      flex: 0.1,
+      field: 'image',
+      minWidth: 220,
+      headerName: `${t('img')}`,
+      renderCell: ({ row }) => {
+        const { image } = row
+
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <img style={{ width: '60px' }} src={image} alt='' />
+            </Box>
+          </Box>
+        )
+      }
+    },
+    {
+      flex: 0.1,
+      field: 'Arabic name',
+      minWidth: 220,
+      headerName: `${t('name_ar')}`,
+      renderCell: ({ row }) => {
+        const { name_ar } = row
+
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            {/* {renderName(row)} */}
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <Typography noWrap sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                {name_ar}
+              </Typography>
+            </Box>
+          </Box>
+        )
+      }
+    },
+    {
+      flex: 0.1,
+      field: 'English Name',
+      minWidth: 220,
+      headerName: `${t('name_en')}`,
+      renderCell: ({ row }) => {
+        const { name_en } = row
+
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            {/* {renderName(row)} */}
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <Typography noWrap sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                {name_en}
+              </Typography>
+            </Box>
+          </Box>
+        )
+      }
+    }
+  ]
+
+  const offer_branches_products = () => {
+    axios
+      .get(BASE_URL + `offers/offer_branches_subcats/${query?.id}`)
+      .then(res => {
+        console.log(res)
+        if (res.data.status == 'success') {
+          setBranchesSubcategories(Array.isArray(res.data.result) ? res.data.result : [])
+        }
+      })
+      .catch(e => console.log(e))
+  }
+
+  const getMagBranches = () => {
+    axios
+      .get(BASE_URL + `offers/offer_branches_products/${query?.id}`)
+      .then(res => {
+        console.log(res.data)
+        if (res.data.status == 'success') {
+          if (Array.isArray(res.data.result)) {
+            setBrabchesProducts(res.data.result.map(it => ({ ...it, selected: false })))
+            setOriginalBranchesProducts(res.data.result.map(it => ({ ...it, selected: false })))
+          }
+        }
+      })
+      .catch(e => console.log(e))
+      .finally(() => {})
+  }
 
   const renderName = row => {
     if (row.avatar) {
@@ -449,13 +570,32 @@ const OfferProducts = () => {
     getAllProducts()
     storeBranches()
     getCategories()
+    getMagBranches()
+    offer_branches_products()
   }, [query?.id])
 
   const handleAddFile = async () => {
+    console.log(brabchesProducts)
+
+    let selsProds = brabchesProducts
+      .filter(it => it.selected)
+      .map(it => it.id)
+      .join('**')
+    console.log(selsProds)
+
+    let selectedSubcats = brabchesProducts
+      .filter(it => it.selected) // Keep only selected products
+      .flatMap(it => it.subcats) // Extract and flatten the subcats arrays
+      .filter((subcat, index, self) => self.indexOf(subcat) === index)
+      .join('**')
+    console.log(selectedSubcats)
+
+    // return
     setAddLoading(true)
 
     const data_send = {
-      products: selectedProducts.join('**trade**')
+      selsProds,
+      selectedSubcats
     }
     axios
       .post(BASE_URL + 'offers/add_prods_in_offer/' + query.id, data_send)
@@ -465,6 +605,7 @@ const OfferProducts = () => {
           setShowAddCatModal(false)
           getAllProducts()
           getCategories()
+          getMagBranches()
         } else if (res.data.status == 'error') {
           toast.error(res.data.message)
         } else {
@@ -508,6 +649,66 @@ const OfferProducts = () => {
   }
 
   // filteraiton part
+
+  // useEffect(() => {
+  //   console.log(selectedSubcats)
+  //   if (originalBranchesProducts && originalBranchesProducts.length >= 1) {
+  //     if (searchValue2.length > 0) {
+  //       // console.log(searchValue2)
+
+  //       const newData = originalBranchesProducts.filter(cat => {
+  //         if (searchValue2.length >= 1 && !cat.name_ar.includes(searchValue2) && !cat.name_en.includes(searchValue2)) {
+  //           return false
+  //         }
+  //         if (selectedSubcats.length > 0) {
+  //           if (!cat.subcats.some(subcat => selectedSubcats.includes(subcat))) {
+  //             return false
+  //           }
+  //         }
+
+  //         return true
+  //       })
+  //       setBrabchesProducts(newData)
+  //     } else {
+  //       if (selectedSubcats.length > 0) {
+  //         if (selectedSubcats.includes('all')) {
+  //           console.log('All categories selected')
+  //           setBrabchesProducts(originalBranchesProducts)
+  //         } else {
+  //           setBrabchesProducts(
+  //             originalBranchesProducts &&
+  //               originalBranchesProducts.filter(it => {
+  //                 // Check if any of the selected subcategories exist in `it.subcats`
+  //                 return it.subcats.some(subcat => selectedSubcats.includes(subcat))
+  //               })
+  //           )
+  //         }
+  //       } else {
+  //         setBrabchesProducts(originalBranchesProducts)
+  //       }
+  //     }
+  //   }
+  // }, [searchValue2, selectedSubcats])
+  useEffect(() => {
+    if (originalBranchesProducts && originalBranchesProducts.length >= 1) {
+      let filteredData = [...originalBranchesProducts]
+
+      // Step 1: Apply search filter if `searchValue2` is non-empty
+      if (searchValue2.trim().length > 0) {
+        filteredData = filteredData.filter(
+          cat => cat.name_ar.includes(searchValue2) || cat.name_en.includes(searchValue2)
+        )
+      }
+
+      // Step 2: Apply subcategory filter if `selectedSubcats` is non-empty
+      if (selectedSubcats.length > 0 && !selectedSubcats.includes('all')) {
+        filteredData = filteredData.filter(cat => cat.subcats.some(subcat => selectedSubcats.includes(subcat)))
+      }
+
+      // Step 3: Update the state with the filtered data
+      setBrabchesProducts(filteredData)
+    }
+  }, [searchValue2, selectedSubcats, originalBranchesProducts])
 
   useEffect(() => {
     if (originalData && originalData.length >= 1) {
@@ -616,8 +817,8 @@ const OfferProducts = () => {
         columns={columns}
         pageSizeOptions={[10, 20, 40, 50]}
         disableRowSelectionOnClick
-        paginationModel={paginationModel}
-        onPaginationModelChange={setPaginationModel}
+        paginationModel={paginationModel2}
+        onPaginationModelChange={setPaginationModel2}
       />
 
       <Dialog
@@ -749,7 +950,58 @@ const OfferProducts = () => {
             px: theme => [`${theme.spacing(5)} !important`, `${theme.spacing(15)} !important`]
           }}
         >
-          <Box sx={{ my: 4 }}>
+          <div className='field_input'>
+            <CustomTextField
+              onChange={e => {
+                setSearchValue2(e.target.value)
+              }}
+              fullWidth
+              label={`${t('search_here')}`}
+              placeholder={t('search_here')}
+            />
+          </div>
+
+          <div className='filter_products'>
+            <div className='w-100 my-2'>
+              <h4>Subcategories</h4>
+              <FormControl fullWidth variant='outlined'>
+                <InputLabel id='age-select-label'>{i18n.language === 'ar' ? 'الفئة العمرية' : 'Age'}</InputLabel>
+                <Select
+                  labelId='age-select-label'
+                  multiple
+                  value={selectedSubcats}
+                  onChange={e => {
+                    setSelectedSubCats(e.target.value)
+                  }}
+                >
+                  <MenuItem disabled value=''>
+                    <em>{i18n.language === 'ar' ? 'اختر' : 'Select'}</em>
+                  </MenuItem>
+                  <MenuItem key='all' value='all'>
+                    {i18n.language === 'ar' ? 'الكل' : 'All'}
+                  </MenuItem>
+                  {branchesSubcategories &&
+                    branchesSubcategories.map(it => (
+                      <MenuItem key={it.id} value={it.id}>
+                        {i18n.language === 'ar' ? it.title_ar : it.title_en}
+                      </MenuItem>
+                    ))}
+                </Select>
+              </FormControl>
+            </div>
+          </div>
+          <DataGrid
+            autoHeight
+            pagination
+            rows={brabchesProducts ? brabchesProducts : []}
+            rowHeight={62}
+            columns={columnsProducts}
+            pageSizeOptions={[10, 20, 40, 50]}
+            disableRowSelectionOnClick
+            paginationModel={paginationModel}
+            onPaginationModelChange={setPaginationModel}
+          />
+          {/* <Box sx={{ my: 4 }}>
             <FormControl style={{ width: '100%' }}>
               <InputLabel htmlFor='outlined-age-native-simple'>{t('prods')}</InputLabel>
               <Select
@@ -775,7 +1027,7 @@ const OfferProducts = () => {
                   ))}
               </Select>
             </FormControl>
-          </Box>
+          </Box> */}
         </DialogContent>
         <DialogActions
           sx={{
@@ -789,7 +1041,13 @@ const OfferProducts = () => {
             <Button disabled={addLoading} type='submit' variant='contained' onClick={handleAddFile}>
               {t('add')}
             </Button>
-            <Button color='secondary' variant='tonal' onClick={handleClose}>
+            <Button
+              color='secondary'
+              variant='tonal'
+              onClick={() => {
+                setShowAddCatModal(false)
+              }}
+            >
               {t('cancel')}
             </Button>
           </Box>

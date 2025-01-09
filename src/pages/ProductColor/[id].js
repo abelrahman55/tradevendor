@@ -92,7 +92,10 @@ const ProductColor = () => {
     order: '',
     parent_id: ''
   })
-  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 5 })
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,  // initial page (zero-indexed)
+    pageSize: 10, // initial page size
+  });
 
   const [imgEn, setImgEn] = useState(null)
   const [imgAr, setImgAr] = useState(null)
@@ -331,6 +334,7 @@ const ProductColor = () => {
       // تجهيز بيانات الطلب النهائي بعد رفع الصورة والصوت
       const requestData = {
         ...newBranch,
+        extra_price: newBranch.extra_price ?? 0,
         color: newBranch.color_id,
         product_id: query?.id
       }

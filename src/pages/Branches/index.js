@@ -69,6 +69,8 @@ const BranchesPage = () => {
     phone: '',
     address_ar: '',
     lat: '',
+    caption_ar: '',
+    caption_en: '',
     lng: '',
     covered_zone: 4
   })
@@ -111,7 +113,11 @@ const BranchesPage = () => {
     order: '',
     parent_id: ''
   })
-  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 5 })
+
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0, // initial page (zero-indexed)
+    pageSize: 10 // initial page size
+  })
 
   const [imgEn, setImgEn] = useState(null)
   const [imgAr, setImgAr] = useState(null)
@@ -421,6 +427,44 @@ const BranchesPage = () => {
             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
               <Typography noWrap sx={{ color: 'text.secondary', fontWeight: 500 }}>
                 {(longitude * 1).toFixed(2)}
+              </Typography>
+            </Box>
+          </Box>
+        )
+      }
+    },
+    {
+      flex: 0.1,
+      field: 'caption_ar',
+      minWidth: 220,
+      headerName: `${t('caption_ar')}`,
+      renderCell: ({ row }) => {
+        const { caption_ar } = row
+
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <Typography noWrap sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                {caption_ar}
+              </Typography>
+            </Box>
+          </Box>
+        )
+      }
+    },
+    {
+      flex: 0.1,
+      field: 'caption_en',
+      minWidth: 220,
+      headerName: `${t('caption_en')}`,
+      renderCell: ({ row }) => {
+        const { caption_en } = row
+
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <Typography noWrap sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                {caption_en}
               </Typography>
             </Box>
           </Box>
@@ -965,6 +1009,30 @@ const BranchesPage = () => {
             <FormControl fullWidth>
               <CustomTextField
                 onChange={e => {
+                  setNewBranch({ ...newBranch, caption_ar: e.target.value })
+                }}
+                fullWidth
+                label={`${t('caption_ar')}`}
+                placeholder={t('caption_ar')}
+              />
+            </FormControl>
+          </Box>
+          <Box sx={{ my: 4 }}>
+            <FormControl fullWidth>
+              <CustomTextField
+                onChange={e => {
+                  setNewBranch({ ...newBranch, caption_en: e.target.value })
+                }}
+                fullWidth
+                label={`${t('caption_en')}`}
+                placeholder={t('caption_en')}
+              />
+            </FormControl>
+          </Box>
+          <Box sx={{ my: 4 }}>
+            <FormControl fullWidth>
+              <CustomTextField
+                onChange={e => {
                   setNewBranch({ ...newBranch, address_ar: e.target.value })
                 }}
                 fullWidth
@@ -1156,6 +1224,35 @@ const BranchesPage = () => {
               />
             </FormControl>
           </Box>
+
+          <Box sx={{ my: 4 }}>
+            <FormControl fullWidth>
+              <CustomTextField
+                value={rowData?.caption_ar}
+                onChange={e => {
+                  setRowData({ ...rowData, caption_ar: e.target.value })
+                }}
+                fullWidth
+                label={`${t('caption_ar')}`}
+                placeholder={t('caption_ar')}
+              />
+            </FormControl>
+          </Box>
+
+          <Box sx={{ my: 4 }}>
+            <FormControl fullWidth>
+              <CustomTextField
+                value={rowData?.caption_en}
+                onChange={e => {
+                  setRowData({ ...rowData, caption_en: e.target.value })
+                }}
+                fullWidth
+                label={`${t('caption_en')}`}
+                placeholder={t('caption_en')}
+              />
+            </FormControl>
+          </Box>
+
           <Box sx={{ my: 4 }}>
             <FormControl fullWidth>
               <CustomTextField
