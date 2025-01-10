@@ -108,10 +108,11 @@ const BranchProducts = () => {
     order: '',
     parent_id: ''
   })
+
   const [paginationModel, setPaginationModel] = useState({
-    page: 0,  // initial page (zero-indexed)
-    pageSize: 10, // initial page size
-  });
+    page: 0, // initial page (zero-indexed)
+    pageSize: 10 // initial page size
+  })
 
   const [imgEn, setImgEn] = useState(null)
   const [imgAr, setImgAr] = useState(null)
@@ -781,7 +782,7 @@ const BranchProducts = () => {
         <div className='w-100 my-2'>
           <h4>Subcategories</h4>
           <FormControl fullWidth variant='outlined'>
-            <InputLabel id='age-select-label'>{i18n.language === 'ar' ? 'الفئة العمرية' : 'Age'}</InputLabel>
+            <InputLabel id='age-select-label'>{i18n.language === 'ar' ? 'الفئة ' : 'Subcategory'}</InputLabel>
             <Select
               labelId='age-select-label'
               multiple
@@ -986,7 +987,7 @@ const BranchProducts = () => {
               <InputLabel htmlFor='outlined-age-native-simple'>{t('subs')}</InputLabel>
               <Select
                 native
-                label='Age'
+                label='Subcategories'
                 defaultValue=''
                 inputProps={{
                   name: 'age',
