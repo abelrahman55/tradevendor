@@ -1387,7 +1387,7 @@ const BranchesPage = () => {
             </FormControl>
           </Box>
 
-          <Box sx={{ my: 4 }}>
+          {/* <Box sx={{ my: 4 }}>
             <FormControl style={{ width: '100%' }}>
               <InputLabel htmlFor='outlined-age-native-simple'>{t('subs')}</InputLabel>
               <Select
@@ -1405,9 +1405,7 @@ const BranchesPage = () => {
                 }}
               >
                 <option disabled={true}></option>
-                {/*<option key={0} value={'all'}>
-                  {i18n.language == 'ar' ? 'الكل' : 'all'}
-                </option>*/}
+
                 {subcategories &&
                   subcategories?.map(it => {
                     return (
@@ -1418,7 +1416,7 @@ const BranchesPage = () => {
                   })}
               </Select>
             </FormControl>
-          </Box>
+          </Box> */}
 
           <Box sx={{ my: 4 }}>
             <FormControl style={{ width: '100%' }}>
@@ -1577,7 +1575,7 @@ const BranchesPage = () => {
             <FormControl fullWidth>
               <CustomTextField
                 onChange={e => {
-                  setRowData({ ...rowData, name_en: e.target.value })
+                  setRowData({ ...rowData, title_en: e.target.value })
                 }}
                 value={rowData?.title_en}
                 fullWidth
@@ -1643,7 +1641,7 @@ const BranchesPage = () => {
             </FormControl>
           </Box>
 
-          <Box sx={{ my: 4 }}>
+          {/* <Box sx={{ my: 4 }}>
             <FormControl style={{ width: '100%' }}>
               <InputLabel htmlFor='outlined-age-native-simple'>{t('subs')}</InputLabel>
               <Select
@@ -1671,7 +1669,7 @@ const BranchesPage = () => {
                   })}
               </Select>
             </FormControl>
-          </Box>
+          </Box> */}
 
           <Box sx={{ my: 4 }}>
             <FormControl style={{ width: '100%' }}>

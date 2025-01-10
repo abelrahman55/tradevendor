@@ -26,12 +26,12 @@ const navigation = () => {
     //     }
     //   ]
     // },
-    {
-      title: 'Categories',
-      title_ar: 'الفئات الفرعيه',
-      icon: 'tabler:file-dollar',
-      path: '/Categories'
-    },
+    // {
+    //   title: 'Categories',
+    //   title_ar: 'الفئات الفرعيه',
+    //   icon: 'tabler:file-dollar',
+    //   path: '/Categories'
+    // },
     {
       title: 'Branches',
       title_ar: 'فروع المتجر',
