@@ -48,17 +48,17 @@ const AttributeValues = () => {
   const { t, i18n } = useTranslation()
   let localData = localStorage.getItem('tradeVenddor')
   let storeData = localData && JSON.parse(localData)
+  const [attData, setAttData] = useState({})
   const [allCategories, setAllCategories] = useState([])
 
   const [selectedCategories, setSelectedCategories] = useState([])
 
   const [newBranch, setNewBranch] = useState({
-    extra_price: '',
-    in_stock: '',
-    attribute_id: '',
+    price: '',
     attribute: '',
-    value_ar: '',
-    value_en: ''
+    name_ar: '',
+    name_en: '',
+    image: ''
   })
   const [allAtts, setAllAtts] = useState([])
   const [showUpdateModal, setShowUpdateModal] = useState(false)
@@ -93,10 +93,11 @@ const AttributeValues = () => {
     order: '',
     parent_id: ''
   })
+
   const [paginationModel, setPaginationModel] = useState({
-    page: 0,  // initial page (zero-indexed)
-    pageSize: 10, // initial page size
-  });
+    page: 0, // initial page (zero-indexed)
+    pageSize: 10 // initial page size
+  })
 
   const [imgEn, setImgEn] = useState(null)
   const [imgAr, setImgAr] = useState(null)
@@ -134,17 +135,36 @@ const AttributeValues = () => {
   const columns = [
     {
       flex: 0.1,
-      field: 'name_ar',
+      field: 'image',
       minWidth: 220,
-      headerName: `${t('name_ar')}`,
+      headerName: `${t('image')}`,
       renderCell: ({ row }) => {
-        const { value_ar } = row
+        const { name_ar } = row
 
         return (
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
               <Typography noWrap sx={{ color: 'text.secondary', fontWeight: 500 }}>
-                <p>{value_ar}</p>
+                <img style={{ width: '60px', height: '60px' }} src={row?.image} alt='' />
+              </Typography>
+            </Box>
+          </Box>
+        )
+      }
+    },
+    {
+      flex: 0.1,
+      field: 'name_ar',
+      minWidth: 220,
+      headerName: `${t('name_ar')}`,
+      renderCell: ({ row }) => {
+        const { name_ar } = row
+
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <Typography noWrap sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                <p>{name_ar}</p>
               </Typography>
             </Box>
           </Box>
@@ -157,13 +177,13 @@ const AttributeValues = () => {
       minWidth: 220,
       headerName: `${t('name_en')}`,
       renderCell: ({ row }) => {
-        const { value_en } = row
+        const { name_en } = row
 
         return (
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
               <Typography noWrap sx={{ color: 'text.secondary', fontWeight: 500 }}>
-                <p>{value_en}</p>
+                <p>{name_en}</p>
               </Typography>
             </Box>
           </Box>
@@ -172,36 +192,17 @@ const AttributeValues = () => {
     },
     {
       flex: 0.1,
-      field: 'in_stock',
+      field: 'price',
       minWidth: 220,
-      headerName: `${t('in_stock')}`,
+      headerName: `${t('price')}`,
       renderCell: ({ row }) => {
-        const { in_stock } = row
+        const { price } = row
 
         return (
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
               <Typography noWrap sx={{ color: 'text.secondary', fontWeight: 500 }}>
-                <p>{in_stock}</p>
-              </Typography>
-            </Box>
-          </Box>
-        )
-      }
-    },
-    {
-      flex: 0.1,
-      field: 'extra_price',
-      minWidth: 220,
-      headerName: `${t('extra_price')}`,
-      renderCell: ({ row }) => {
-        const { extra_price } = row
-
-        return (
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-              <Typography noWrap sx={{ color: 'text.secondary', fontWeight: 500 }}>
-                <p>{extra_price}</p>
+                <p>{price}</p>
               </Typography>
             </Box>
           </Box>
@@ -263,6 +264,7 @@ const AttributeValues = () => {
                 onClick={() => {
                   setShowUpdateModal(true)
                   setRowData(row)
+                  setImgUrl(row?.image)
                 }}
                 className=''
               >
@@ -402,23 +404,45 @@ const AttributeValues = () => {
       })
   }
 
+  const getAttribute = () => {
+    axios
+      .get(BASE_URL + `products/attribute_details/${query?.id}`)
+      .then(res => {
+        console.log(res.data)
+        if (res.data.status == 'success') {
+          setAttData(res.data.result)
+        }
+      })
+      .catch(e => console.log(e))
+  }
+
   useEffect(() => {
     storeBranches()
   }, [])
 
   useEffect(() => {
+    getAttribute()
     getCategories()
   }, [query?.id])
 
   const handleAddFile = async () => {
     setAddLoading(true)
+    let imageFile = null
     try {
       // رفع الصورة الواحدة
+      if (newBranch?.image) {
+        const formDataImage = new FormData()
+        formDataImage.append('image', newBranch?.image) // تأكد أن `imageFile` هو ملف الصورة الواحد
+
+        const imageResponse = await axios.post(`${BASE_URL}img_upload`, formDataImage)
+
+        imageFile = imageResponse?.data?.data?.image ?? null
+      }
 
       // تجهيز بيانات الطلب النهائي بعد رفع الصورة والصوت
       const requestData = {
         ...newBranch,
-        attribute_value_id: newBranch.attribute_id,
+        image: imageFile,
         attribute_id: query?.id
       }
 
@@ -427,6 +451,8 @@ const AttributeValues = () => {
 
       // استدعاء الدالة بعد الإضافة
       getCategories()
+      setImg(null)
+      setNewBranch({ ...newBranch, image: null })
       toast.success('Successfully added!')
     } catch (error) {
       console.error(error)
@@ -500,8 +526,8 @@ const AttributeValues = () => {
         const newData = originalData.filter(cat => {
           if (
             searchValue.length > 0 &&
-            (cat.value_ar.toLowerCase().includes(searchValue.toLowerCase()) ||
-              cat.value_en.toLowerCase().includes(searchValue.toLowerCase()))
+            (cat.name_ar.toLowerCase().includes(searchValue.toLowerCase()) ||
+              cat.name_en.toLowerCase().includes(searchValue.toLowerCase()))
           ) {
             return true
           }
@@ -517,9 +543,17 @@ const AttributeValues = () => {
 
   const handleEdit = async () => {
     setAddLoading(true)
+    let imageFile = null
+    const formDataImage = new FormData()
+    formDataImage.append('image', editImg) // تأكد أن `imageFile` هو ملف الصورة الواحد
+
+    const imageResponse = await axios.post(`${BASE_URL}img_upload`, formDataImage)
+
+    imageFile = imageResponse?.data?.data?.image ?? null
 
     const data_send = {
-      ...rowData
+      ...rowData,
+      image: imageFile ?? rowData?.image
     }
 
     axios
@@ -676,7 +710,7 @@ const AttributeValues = () => {
             <FormControl fullWidth>
               <CustomTextField
                 onChange={e => {
-                  setNewBranch({ ...newBranch, value_ar: e.target.value })
+                  setNewBranch({ ...newBranch, name_ar: e.target.value })
                 }}
                 fullWidth
                 label={`${t('name_ar')}`}
@@ -688,7 +722,7 @@ const AttributeValues = () => {
             <FormControl fullWidth>
               <CustomTextField
                 onChange={e => {
-                  setNewBranch({ ...newBranch, value_en: e.target.value })
+                  setNewBranch({ ...newBranch, name_en: e.target.value })
                 }}
                 fullWidth
                 label={`${t('name_en')}`}
@@ -696,27 +730,31 @@ const AttributeValues = () => {
               />
             </FormControl>
           </Box>
+          {attData?.type != 'required' && (
+            <Box sx={{ my: 4 }}>
+              <FormControl fullWidth>
+                <CustomTextField
+                  onChange={e => {
+                    setNewBranch({ ...newBranch, price: e.target.value })
+                  }}
+                  fullWidth
+                  label={`${t('price')}`}
+                  placeholder={t('price')}
+                />
+              </FormControl>
+            </Box>
+          )}
+
           <Box sx={{ my: 4 }}>
             <FormControl fullWidth>
               <CustomTextField
                 onChange={e => {
-                  setNewBranch({ ...newBranch, in_stock: e.target.value })
+                  setNewBranch({ ...newBranch, image: e.target.files[0] })
                 }}
                 fullWidth
-                label={`${t('in_stock')}`}
-                placeholder={t('in_stock')}
-              />
-            </FormControl>
-          </Box>
-          <Box sx={{ my: 4 }}>
-            <FormControl fullWidth>
-              <CustomTextField
-                onChange={e => {
-                  setNewBranch({ ...newBranch, extra_price: e.target.value })
-                }}
-                fullWidth
-                label={`${t('extra_price')}`}
-                placeholder={t('extra_price')}
+                type='file'
+                label={`${t('image')}`}
+                placeholder={t('image')}
               />
             </FormControl>
           </Box>
@@ -835,9 +873,9 @@ const AttributeValues = () => {
             <FormControl fullWidth>
               <CustomTextField
                 onChange={e => {
-                  setRowData({ ...rowData, value_ar: e.target.value })
+                  setRowData({ ...rowData, name_ar: e.target.value })
                 }}
-                value={rowData?.value_ar}
+                value={rowData?.name_ar}
                 fullWidth
                 label={`${t('name_ar')}`}
                 placeholder={t('name_ar')}
@@ -848,41 +886,47 @@ const AttributeValues = () => {
             <FormControl fullWidth>
               <CustomTextField
                 onChange={e => {
-                  setRowData({ ...rowData, value_en: e.target.value })
+                  setRowData({ ...rowData, name_en: e.target.value })
                 }}
-                value={rowData?.value_en}
+                value={rowData?.name_en}
                 fullWidth
                 label={`${t('name_en')}`}
                 placeholder={t('name_en')}
               />
             </FormControl>
           </Box>
+          {attData?.type != 'required' && (
+            <Box sx={{ my: 4 }}>
+              <FormControl fullWidth>
+                <CustomTextField
+                  onChange={e => {
+                    setRowData({ ...rowData, price: e.target.value })
+                  }}
+                  fullWidth
+                  value={rowData?.price}
+                  label={`${t('price')}`}
+                  placeholder={t('price')}
+                />
+              </FormControl>
+            </Box>
+          )}
           <Box sx={{ my: 4 }}>
             <FormControl fullWidth>
               <CustomTextField
                 onChange={e => {
-                  setRowData({ ...rowData, extra_price: e.target.value })
+                  setEditImg(e.target.files[0])
+                  setImgUrl(URL.createObjectURL(e.target.files[[0]]))
+
+                  // setNewBranch({ ...newBranch, image: e.target.files[0] })
                 }}
-                value={rowData?.extra_price}
                 fullWidth
-                label={`${t('extra_price')}`}
-                placeholder={t('extra_price')}
+                type='file'
+                label={`${t('image')}`}
+                placeholder={t('image')}
               />
             </FormControl>
           </Box>
-          <Box sx={{ my: 4 }}>
-            <FormControl fullWidth>
-              <CustomTextField
-                onChange={e => {
-                  setRowData({ ...rowData, in_stock: e.target.value })
-                }}
-                value={rowData?.in_stock}
-                fullWidth
-                label={`${t('in_stock')}`}
-                placeholder={t('in_stock')}
-              />
-            </FormControl>
-          </Box>
+          {imgUrl && <img style={{ width: '200px' }} src={imgUrl} alt='' />}
           {/* <Box sx={{ my: 4 }}>
             <FormControl fullWidth>
               <CustomTextField

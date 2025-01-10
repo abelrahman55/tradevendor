@@ -58,7 +58,9 @@ const ProductAttributes = () => {
     attribute_id: '',
     attribute: '',
     name_ar: '',
-    name_en: ''
+    name_en: '',
+    type: 'required', //required(free),optional
+    max_quan: 1
   })
   const [allAtts, setAllAtts] = useState([])
   const [showUpdateModal, setShowUpdateModal] = useState(false)
@@ -161,6 +163,44 @@ const ProductAttributes = () => {
             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
               <Typography noWrap sx={{ color: 'text.secondary', fontWeight: 500 }}>
                 <p>{name_en}</p>
+              </Typography>
+            </Box>
+          </Box>
+        )
+      }
+    },
+    {
+      flex: 0.1,
+      field: 'type',
+      minWidth: 220,
+      headerName: `${t('type')}`,
+      renderCell: ({ row }) => {
+        const { type } = row
+
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <Typography noWrap sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                <p>{type}</p>
+              </Typography>
+            </Box>
+          </Box>
+        )
+      }
+    },
+    {
+      flex: 0.1,
+      field: 'max_quan',
+      minWidth: 220,
+      headerName: `${t('max_quan')}`,
+      renderCell: ({ row }) => {
+        const { max_quan } = row
+
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <Typography noWrap sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                <p>{max_quan}</p>
               </Typography>
             </Box>
           </Box>
@@ -639,6 +679,54 @@ const ProductAttributes = () => {
               />
             </FormControl>
           </Box>
+          <Box sx={{ my: 4 }}>
+            <label className='d-block' htmlFor=''>
+              {t('type')}
+            </label>
+            <Select
+              native
+              label='Age'
+              defaultValue=''
+              className='w-100'
+              inputProps={{
+                name: 'age',
+                id: 'outlined-age-native-simple'
+              }}
+              onChange={e => {
+                setNewBranch({ ...newBranch, type: e.target.value })
+              }}
+              value={newBranch?.type}
+            >
+              {[
+                { id: 'optional', name: t('optional') },
+                { id: 'required', name: t('required') }
+              ]?.map(it => {
+                return (
+                  <option key={it.id} value={it.id}>
+                    {it.name}
+                  </option>
+                )
+              })}
+            </Select>
+          </Box>
+
+          {newBranch?.type == 'required' && (
+            <>
+              <Box sx={{ my: 4 }}>
+                <FormControl fullWidth>
+                  <CustomTextField
+                    onChange={e => {
+                      setNewBranch({ ...newBranch, max_quan: e.target.value })
+                    }}
+                    fullWidth
+                    label={`${t('max_quan')}`}
+                    placeholder={t('max_quan')}
+                  />
+                </FormControl>
+              </Box>
+            </>
+          )}
+
           {/* <Box sx={{ my: 4 }}>
             <FormControl fullWidth>
               <CustomTextField
@@ -776,6 +864,54 @@ const ProductAttributes = () => {
               />
             </FormControl>
           </Box>
+          <Box sx={{ my: 4 }}>
+            <label className='d-block' htmlFor=''>
+              {t('type')}
+            </label>
+            <Select
+              native
+              label='Age'
+              defaultValue=''
+              className='w-100'
+              inputProps={{
+                name: 'age',
+                id: 'outlined-age-native-simple'
+              }}
+              onChange={e => {
+                setRowData({ ...rowData, type: e.target.value })
+              }}
+              value={rowData?.type}
+            >
+              {[
+                { id: 'optional', name: t('optional') },
+                { id: 'required', name: t('required') }
+              ]?.map(it => {
+                return (
+                  <option key={it.id} value={it.id}>
+                    {it.name}
+                  </option>
+                )
+              })}
+            </Select>
+          </Box>
+
+          {rowData?.type == 'required' && (
+            <>
+              <Box sx={{ my: 4 }}>
+                <FormControl fullWidth>
+                  <CustomTextField
+                    onChange={e => {
+                      setRowData({ ...rowData, max_quan: e.target.value })
+                    }}
+                    value={rowData?.max_quan}
+                    fullWidth
+                    label={`${t('max_quan')}`}
+                    placeholder={t('max_quan')}
+                  />
+                </FormControl>
+              </Box>
+            </>
+          )}
           {/* <Box sx={{ my: 4 }}>
             <FormControl fullWidth>
               <CustomTextField
